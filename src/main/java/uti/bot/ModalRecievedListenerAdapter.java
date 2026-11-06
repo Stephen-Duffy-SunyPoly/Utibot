@@ -1,8 +1,15 @@
 package uti.bot;
 
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+
+import java.util.EnumSet;
+import java.util.Optional;
 
 public class ModalRecievedListenerAdapter extends ListenerAdapter {
     @Override
@@ -27,6 +34,41 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     Main.competitionServer.addRoleToMember(event.getUser(),Main.getRegisteredRole()).queue();
                     event.getHook().deleteOriginal().queue();
 
+                }
+                case "create-team" -> {
+                    ModalMapping nameMapping = event.getValue("name");
+                    if(nameMapping == null){
+                        return;
+                    }
+                    net.dv8tion.jda.api.entities.User discordUser =event.getUser();
+                    User user = UserManager.getInstance().get(discordUser.getIdLong());
+                    String teamName = nameMapping.getAsOptionalString();
+                    if(teamName == null){
+                        return;
+                    }
+                    teamName = teamName.trim();
+                    if(teamName.isEmpty()){
+                        event.reply("Invalid team name").setEphemeral(true).queue();
+                        return;
+                    }
+
+                    if(TeamManager.getInstance().get(teamName)!= null){
+                        event.reply("A team with that name already exsists").setEphemeral(true).queue();
+                        return;
+                    }
+                    int roleColor = (int)(Math.random() * 16777216);
+                    Role teamRole = Main.competitionServer.createRole().setName("Team "+teamName).setColor(roleColor).setMentionable(true).complete();
+                    Category teamsCategory = Main.competitionServer.getCategoryById(Main.config.getTeamCategoryId());
+                    MessageChannel channel = Main.competitionServer.createTextChannel("Team "+teamName,teamsCategory)
+                            .setTopic("Submissions and chatter for "+teamName)
+                            .addRolePermissionOverride(teamRole.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL),null)
+                            .complete();
+                    Team team = new Team(teamName, teamRole.getIdLong(), channel.getIdLong());
+                    TeamManager.getInstance().add(team);
+                    user.setTeam(team);
+                    Main.competitionServer.addRoleToMember(discordUser,teamRole).queue();
+                    channel.sendMessage("<@&"+teamRole.getId()+"> You will use this channel to communicate with your team mates and submit answers.").queue();
+                    event.reply("Created team: "+teamName).queue();
                 }
             }
         }

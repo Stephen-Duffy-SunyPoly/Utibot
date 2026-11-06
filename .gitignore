@@ -45,3 +45,4 @@ bin/
 /config.json
 /config.json.backup
 /users.json
+/teams.json

@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
 public class Main {
@@ -21,7 +22,7 @@ public class Main {
         }
 
         config = new ConfigManager();
-        //TODO init teams first
+        TeamManager.init();
         UserManager.init();
 
         //load / generate config here
@@ -30,6 +31,7 @@ public class Main {
                 .addEventListeners(new SlashCommandListenerAdapter())
                 .addEventListeners(new ButtonInteractionListenerAdapter())
                 .addEventListeners(new ModalRecievedListenerAdapter())
+                .addEventListeners(new AutocompleteListenerAdapter())
                 .build();
 
         jda.awaitReady();
@@ -59,7 +61,8 @@ public class Main {
 
     public static void registerCommandsServerIsSetUp(){
         competitionServer.updateCommands().addCommands(
-                Commands.slash("reset","Reset this server to a similar state as when the competition was set up").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                Commands.slash("reset","Reset this server to a similar state as when the competition was set up").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                Commands.slash("team","Manage your team status").addOption(OptionType.STRING,"command","The team specific command to execute", true, true)
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }

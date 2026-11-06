@@ -3,12 +3,17 @@ package uti.bot;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.label.Label;
+import net.dv8tion.jda.api.components.textinput.TextInput;
+import net.dv8tion.jda.api.components.textinput.TextInputStyle;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.modals.Modal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -24,6 +29,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         if(Main.config.isServerSetup()){
             switch (event.getName()){
                 case "reset" ->resetServer(event);
+                case "team" -> handleTeamCommand(event);
             }
         } else {
             if(event.getName().equals("setup")){
@@ -33,6 +39,28 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         }
     }
 
+    void handleTeamCommand(SlashCommandInteractionEvent event){
+        //validate the option they chose
+        User user = UserManager.getInstance().get(event.getUser().getIdLong());
+        if(user == null){
+            event.reply("You need to register for the event first.").setEphemeral(true).queue();
+            return;
+        }
+        String command = event.getOption("command", OptionMapping::getAsString);
+        if(command == null){
+            return;
+        }
+
+        //if they are not on a team
+        if(command.equals("create")){
+            event.replyModal(Modal.create("create-team","Create new Team")
+                    .addComponents(Label.of("Team Name","what to name the team", TextInput.create("name", TextInputStyle.SHORT).setRequiredRange(4,25).setRequired(true).build()))
+                    .build()).queue();
+        } else {
+            event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
+        }
+
+    }
     void setupServer(){
         long botId = Main.competitionServer.getJDA().getSelfUser().getIdLong();
         //create a registered role

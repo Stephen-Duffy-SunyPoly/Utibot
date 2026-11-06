@@ -7,6 +7,8 @@ public class User {
     private final String name;
     private final String email;
 
+    private Team team;
+
     //TODO team
 
     public User(long userID, String name, String email){
@@ -19,6 +21,12 @@ public class User {
         userID = json.getLong("user-id");
         name = json.getString("name");
         email = json.getString("email");
+        if(json.has("team")) {
+            String teamName = json.getString("team");
+            if (teamName != null) {
+                team = TeamManager.getInstance().get(teamName);
+            }
+        }
     }
 
     JSONObject asJSON(){
@@ -26,13 +34,19 @@ public class User {
         json.put("user-id",userID);
         json.put("name",name);
         json.put("email",email);
-
+        if(team!=null){
+            json.put("team",team.getName());
+        }
         return json;
     }
 
     @Override
     public String toString() {
-        return "name: ["+name+"] email: "+email+" userId: "+userID;
+        return "User{" +
+                "userID=" + userID +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 
     @Override
@@ -53,5 +67,14 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public Team getTeam(){
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
+        UserManager.getInstance().save();
     }
 }
