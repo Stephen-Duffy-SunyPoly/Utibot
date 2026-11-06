@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public class ButtonInteractionListenerAdapter extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        //there is 1 exception to this, accepting team invites will happen in the DMs
         if(event.getGuild() == null || event.getGuild().getIdLong() != Main.competitionServer.getIdLong()){
             return;
         }
@@ -48,7 +49,11 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
     }
 
     void showRegisterModal(ButtonInteractionEvent event){
-        //TODO check if the user has already registered
+        if(UserManager.getInstance().get(event.getUser().getIdLong())!= null){
+            event.reply("You have already registered for this event!").setEphemeral(true).queue();
+            return;
+        }
+
         event.replyModal(Modal.create(
                 "register", "Register for Competition"
         ).addComponents(
