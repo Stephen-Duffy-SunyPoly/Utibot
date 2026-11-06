@@ -74,4 +74,18 @@ public class Downloader {
         }
 
     }
+
+    public static void recursiveDelete(File toDelete){
+        String[] files = toDelete.list();
+        if(files!=null)
+            for(String fName: files){
+                File subFile = new File(toDelete, fName);
+                if(subFile.isDirectory()){
+                    recursiveDelete(subFile);
+                } else {
+                    boolean ignored = subFile.delete();
+                }
+            }
+        boolean ignored = toDelete.delete();
+    }
 }

@@ -1,5 +1,6 @@
 package uti.bot;
 
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.json.JSONArray;
 
 import java.io.File;
@@ -64,8 +65,14 @@ public class ProblemManager {
 
     public void deleteTeam(Problem problem){
         problems.remove(problem);
-        //TODO
-//        problem.getChannel().delete().queue();
+        //delete the problem folder
+        Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
+        //delete the channel if there is one
+        MessageChannel chanel = problem.getScoringChannel();
+        if(chanel!=null){
+            chanel.delete().queue();
+        }
+        //TODO delete all associated scores
 
         save();
     }
@@ -75,5 +82,6 @@ public class ProblemManager {
     public void wipe(){
         problems.clear();
         boolean ignored = new File("problems.json").delete();
+        Downloader.recursiveDelete(new File("problems/"));
     }
 }

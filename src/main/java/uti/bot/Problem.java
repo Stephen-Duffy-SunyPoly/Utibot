@@ -1,5 +1,6 @@
 package uti.bot;
 
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.json.JSONObject;
 
 public class Problem {
@@ -94,5 +95,12 @@ public class Problem {
 
     public long getSubjectiveScoringChannelId() {
         return subjectiveScoringChannelId;
+    }
+
+    public MessageChannel getScoringChannel(){
+        if(subjectiveScoringChannelId == 0){
+            return null;
+        }
+        return Main.competitionServer.getTextChannelById(subjectiveScoringChannelId);
     }
 }
