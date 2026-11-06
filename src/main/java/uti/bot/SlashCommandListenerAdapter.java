@@ -52,10 +52,14 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         }
 
         //if they are not on a team
-        if(command.equals("create")){
-            event.replyModal(Modal.create("create-team","Create new Team")
-                    .addComponents(Label.of("Team Name","what to name the team", TextInput.create("name", TextInputStyle.SHORT).setRequiredRange(4,25).setRequired(true).build()))
-                    .build()).queue();
+        if(user.getTeam() == null) {
+            if (command.equals("create")) {
+                event.replyModal(Modal.create("create-team", "Create new Team")
+                        .addComponents(Label.of("Team Name", "what to name the team", TextInput.create("name", TextInputStyle.SHORT).setRequiredRange(4, 25).setRequired(true).build()))
+                        .build()).queue();
+            } else {
+                event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
+            }
         } else {
             event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
         }

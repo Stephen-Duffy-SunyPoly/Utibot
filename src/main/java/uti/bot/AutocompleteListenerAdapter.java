@@ -19,10 +19,12 @@ public class AutocompleteListenerAdapter extends ListenerAdapter {
                         event.replyChoices().queue();
                         return;
                     }
-                    //if the user is not on a team
-                    event.replyChoice("create","create").queue();
-                    return;
-                    //if the user is on a team
+                    if(user.getTeam() == null) {
+                        event.replyChoice("create", "create").queue();
+                        return;
+                    } else {
+                        //if the user is on a team
+                    }
                 }
             }
         }
