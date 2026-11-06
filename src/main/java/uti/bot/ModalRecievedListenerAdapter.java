@@ -64,6 +64,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     Category teamsCategory = Main.competitionServer.getCategoryById(Main.config.getTeamCategoryId());
                     MessageChannel channel = Main.competitionServer.createTextChannel("Team "+teamName,teamsCategory)
                             .setTopic("Submissions and chatter for "+teamName)
+                            .syncPermissionOverrides()
                             .addRolePermissionOverride(teamRole.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL),null)
                             .complete();
                     Team team = new Team(teamName, teamRole.getIdLong(), channel.getIdLong());

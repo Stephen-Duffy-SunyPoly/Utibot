@@ -126,6 +126,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         Category teamCategory = Main.competitionServer.createCategory("Team").addRolePermissionOverride(registerdRole.getIdLong(),
                 null,EnumSet.of(Permission.VIEW_CHANNEL))
                 .addMemberPermissionOverride(botId,EnumSet.of(Permission.VIEW_CHANNEL),null)
+                .addRolePermissionOverride(atEveryone.getIdLong(),null,EnumSet.of(Permission.VIEW_CHANNEL))
                 .complete();
         Main.config.setTeamCategoryId(teamCategory.getIdLong());
 
@@ -133,11 +134,12 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         //deny registered permission to view this category
         Category judgeCategory = Main.competitionServer.createCategory("Judge").addRolePermissionOverride(registerdRole.getIdLong(),
                         null,EnumSet.of(Permission.VIEW_CHANNEL))
+                .addRolePermissionOverride(atEveryone.getIdLong(),null,EnumSet.of(Permission.VIEW_CHANNEL))
                 .addMemberPermissionOverride(botId,EnumSet.of(Permission.VIEW_CHANNEL),null)
                 .complete();
         Main.config.setJudgeCategoryId(judgeCategory.getIdLong());
         //create the admin channel in this category
-        MessageChannel adminChannel = Main.competitionServer.createTextChannel("Admin",judgeCategory).setTopic("A private space for competition administration").complete();
+        MessageChannel adminChannel = Main.competitionServer.createTextChannel("Admin",judgeCategory).setTopic("A private space for competition administration").syncPermissionOverrides().complete();
         Main.config.setAdminChannelId(adminChannel.getIdLong());
         adminChannel.sendMessage("This is the admin channel. Use this channel to configure and administration the challenge. Users can not see this channel.").queue();
 
