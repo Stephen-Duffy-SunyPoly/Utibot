@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
@@ -20,12 +21,15 @@ public class Main {
         }
 
         config = new ConfigManager();
+        //TODO init teams first
+        UserManager.init();
 
         //load / generate config here
 
         JDA jda = JDABuilder.createLight(TOKEN)
                 .addEventListeners(new SlashCommandListenerAdapter())
                 .addEventListeners(new ButtonInteractionListenerAdapter())
+                .addEventListeners(new ModalRecievedListenerAdapter())
                 .build();
 
         jda.awaitReady();
@@ -58,5 +62,16 @@ public class Main {
                 Commands.slash("reset","Reset this server to a similar state as when the competition was set up").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
+    }
+
+    public static Role getRegisteredRole(){
+        if(!config.isServerSetup()){
+            throw new RuntimeException("Attempted to get registered roll when server was not set up");
+        }
+        Role registered = competitionServer.getRoleById(config.getRegisteredRoleId());
+        if(registered == null){
+            throw new RuntimeException("Failed to find registered role!");
+        }
+        return registered;
     }
 }

@@ -44,3 +44,4 @@ bin/
 /.idea/
 /config.json
 /config.json.backup
+/users.json

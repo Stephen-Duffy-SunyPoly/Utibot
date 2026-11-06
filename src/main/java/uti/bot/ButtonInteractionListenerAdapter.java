@@ -48,6 +48,7 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
     }
 
     void showRegisterModal(ButtonInteractionEvent event){
+        //TODO check if the user has already registered
         event.replyModal(Modal.create(
                 "register", "Register for Competition"
         ).addComponents(
