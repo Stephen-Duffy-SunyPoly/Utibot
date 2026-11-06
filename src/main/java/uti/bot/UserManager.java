@@ -2,6 +2,7 @@ package uti.bot;
 
 import org.json.JSONArray;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -60,5 +61,12 @@ public class UserManager {
     public void add(User newUser){
         users.add(newUser);
         save();
+    }
+
+    /**Completely clear user list. Deletes the users file as well
+     */
+    public void wipe(){
+        users.clear();
+        boolean ignored = new File("users.json").delete();
     }
 }

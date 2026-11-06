@@ -92,6 +92,7 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
         tmpRole.getManager().setPermissions(tmpRole.getPermissionsRaw() | Permission.VIEW_CHANNEL.getRawValue()).queue();
 
         //TODO delete the files for users, teams and problems
+        UserManager.getInstance().wipe();
 
         Main.config.setServerSetup(false);
         Main.registerCommandsServerNotSetUp();
