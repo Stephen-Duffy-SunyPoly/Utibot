@@ -70,26 +70,47 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
             tmp.delete().queue();
         }
         //TODO delete subjective judging channels
+        //delete the judge category
         Category tmpCat = Main.competitionServer.getCategoryById(Main.config.getJudgeCategoryId());
         if(tmpCat!= null){
             tmpCat.delete().queue();
         }
 
-        //TODO delete team channels
+        //delete the team channels
+        TeamManager tm = TeamManager.getInstance();
+        for(int i=0;i<tm.size();i++){
+            Team t = tm.get(i);
+            tmp = t.getChannel();
+            if(tmp != null) {
+                tmp.delete().queue();
+            }
+        }
+
+        //delete the team category
         tmpCat = Main.competitionServer.getCategoryById(Main.config.getTeamCategoryId());
         if(tmpCat != null){
             tmpCat.delete().queue();
         }
 
+        //delete the registration channel
         tmp = Main.competitionServer.getTextChannelById(Main.config.getRegisterChannelId());
         if(tmp != null){
             tmp.delete().queue();
         }
 
-        //TODO delete team roles
+
+        //delete the registered role
         Role tmpRole = Main.competitionServer.getRoleById(Main.config.getRegisteredRoleId());
         if(tmpRole != null){
             tmpRole.delete().queue();
+        }
+        //delete the team roles
+        for(int i=0;i<tm.size();i++){
+            Team t = tm.get(i);
+            tmpRole = t.getRole();
+            if(tmpRole != null) {
+                tmpRole.delete().queue();
+            }
         }
 
         //give @everyone the ability to view channels
@@ -98,6 +119,7 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
 
         //TODO delete the files for users, teams and problems
         UserManager.getInstance().wipe();
+        TeamManager.getInstance().wipe();
 
         Main.config.setServerSetup(false);
         Main.registerCommandsServerNotSetUp();
