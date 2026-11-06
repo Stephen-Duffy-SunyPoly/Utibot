@@ -64,7 +64,7 @@ public class ProblemManager {
         save();
     }
 
-    public void deleteTeam(Problem problem){
+    public void deleteProblem(Problem problem){
         problems.remove(problem);
         //delete the problem folder
         Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));

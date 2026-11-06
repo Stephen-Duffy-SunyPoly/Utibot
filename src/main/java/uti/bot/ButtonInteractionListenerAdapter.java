@@ -50,6 +50,8 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
 
                 case "register" -> showRegisterModal(event);
 
+                case "delete-problem" -> deleteProblem(event);
+
                 case null ->{
                     System.err.println("null button event");
                 }
@@ -59,6 +61,19 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                 }
             }
         }
+    }
+
+    private void deleteProblem(ButtonInteractionEvent event) {
+        //parse the team name
+        String problemName = event.getMessage().getContentRaw().substring("Are you sure you want to delete ".length());
+        event.getMessage().delete().queue();
+        Problem problem = ProblemManager.getInstance().get(problemName);
+        if(problem == null){
+            event.reply("A problem by that name was not found").setEphemeral(true).queue();
+            return;
+        }
+        ProblemManager.getInstance().deleteProblem(problem);
+        event.reply("Deleted problem: "+problem.getName()).queue();
     }
 
     void joinTeam(ButtonInteractionEvent event){
