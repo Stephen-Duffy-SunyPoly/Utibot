@@ -81,7 +81,8 @@ public class Main {
                                         new SubcommandData("info-file","change the info file that will distributed to the players").addOption(OptionType.STRING,"problem","The problem to edit",true,true),
                                         new SubcommandData("judge-program","change the python script used to score the submissions").addOption(OptionType.STRING,"problem","The problem to edit",true,true)
                                 )
-                        )
+                        ),
+                Commands.slash("submit","Submit a response for a problem").addOption(OptionType.STRING,  "problem", "The problem to submit for",true,true)
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }

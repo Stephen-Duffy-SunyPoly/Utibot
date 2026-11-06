@@ -40,6 +40,17 @@ public class AutocompleteListenerAdapter extends ListenerAdapter {
                         ).queue();
                     }
                 }
+
+                case "submit" -> {
+                    //TODO check if the comp has started yet
+                    if(event.getFocusedOption().getName().equals("problem")){
+                        List<String> problemNameList = ProblemManager.getInstance().getNameList();
+                        String userQuery = event.getFocusedOption().getValue().toLowerCase();
+                        event.replyChoices(
+                                problemNameList.stream().filter(pName->pName.toLowerCase().contains(userQuery)).map(name -> new Command.Choice(name,name)).toList()
+                        ).queue();
+                    }
+                }
             }
         }
     }

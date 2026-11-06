@@ -33,6 +33,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 case "reset" ->resetServer(event);
                 case "team" -> handleTeamCommand(event);
                 case "problem" -> handleProblemCommand(event);
+                case "submit" -> handleSubmit(event);
             }
         } else {
             if(event.getName().equals("setup")){
@@ -40,6 +41,41 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 setupServer();
             }
         }
+    }
+
+    private void handleSubmit(SlashCommandInteractionEvent event) {
+        //TODO check if comp is started
+        User user = UserManager.getInstance().get(event.getUser().getIdLong());
+        if(user == null){
+            event.reply("You need to register for the event first.").setEphemeral(true).queue();
+            return;
+        }
+        if (user.getTeam() == null) {
+            event.reply("You need to be on a team to use this feature").setEphemeral(true).queue();
+            return;
+        }
+        OptionMapping probOm = event.getOption("problem");
+        if(probOm == null){
+            return;
+        }
+
+        Problem problem = ProblemManager.getInstance().get(probOm.getAsString());
+        if(problem == null){
+            event.reply("That is not a valid problem").setEphemeral(true).queue();
+            return;
+        }
+        AttachmentUpload.Builder attachmentField = AttachmentUpload.create("submission").setRequired(true);
+        if(!problem.isSubjective()){
+            attachmentField.setFileTypes(
+                    FileType.ofExtension("cpp"),
+                    FileType.ofExtension("c"),
+                    FileType.ofExtension("java"),
+                    FileType.ofExtension("py")
+                    //add more file types here
+//                    ,FileType.ofExtension("rs")
+            );
+        }
+        event.replyModal(Modal.create("submit-prob "+problem.getName(),"Create Submission for "+problem.getName()).addComponents(Label.of("file","Your submission",attachmentField.build())).build()).queue();
     }
 
     void handleProblemCommand(SlashCommandInteractionEvent event){
