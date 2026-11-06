@@ -61,7 +61,16 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }
         } else {
-            event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
+            if(command.equals("leave")){
+                Team t = user.getTeam();
+                user.setTeam(null);
+                event.reply("You have left "+t.getName()).queue();
+                if(t.getNumberOfMembers() == 0){
+                    TeamManager.getInstance().deleteTeam(t);
+                }
+            } else {
+                event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
+            }
         }
 
     }

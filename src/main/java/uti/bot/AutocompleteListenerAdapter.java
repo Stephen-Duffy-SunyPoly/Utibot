@@ -2,6 +2,9 @@ package uti.bot;
 
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
+
+import java.util.EnumSet;
 
 public class AutocompleteListenerAdapter extends ListenerAdapter {
     @Override
@@ -24,6 +27,7 @@ public class AutocompleteListenerAdapter extends ListenerAdapter {
                         return;
                     } else {
                         //if the user is on a team
+                        event.replyChoices(new Command.Choice("leave","leave"), new Command.Choice("invite","invite"), new Command.Choice("list members","list")).queue();
                     }
                 }
             }

@@ -62,6 +62,13 @@ public class TeamManager {
         save();
     }
 
+    public void deleteTeam(Team team){
+        teams.remove(team);
+        team.getChannel().delete().queue();
+        team.getRole().delete().queue();
+        save();
+    }
+
     /**Completely clear team list. Deletes the team file as well
      */
     public void wipe(){
