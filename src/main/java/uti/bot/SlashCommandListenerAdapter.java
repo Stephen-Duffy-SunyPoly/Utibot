@@ -22,7 +22,9 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
             return;
         }
         if(Main.config.isServerSetup()){
-
+            switch (event.getName()){
+                case "reset" ->resetServer(event);
+            }
         } else {
             if(event.getName().equals("setup")){
                 event.reply("Setting up server").queue();
@@ -87,5 +89,14 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
 
 
         Main.config.setServerSetup(true);
+        Main.registerCommandsServerIsSetUp();
+    }
+
+    void resetServer(SlashCommandInteractionEvent event){
+        event.reply("# Are You Sure?\nThis action will ***DELETE*** all completion channels including:\n- all team chatter\n- any subjective judging\n- any administration commands.\n- any roles created by this bot\n\nAny competition data stored by the bot will deleted including:\n- teams\n- problem data\n- user registration information\n\nAre you sure you want to proceed?")
+                .addComponents(ActionRow.of(
+                        Button.danger("reset-server","Proceed"),
+                        Button.secondary("cancel","Cancel")
+                )).setEphemeral(true).queue();
     }
 }

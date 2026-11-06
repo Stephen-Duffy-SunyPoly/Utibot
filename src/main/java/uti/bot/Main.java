@@ -25,6 +25,7 @@ public class Main {
 
         JDA jda = JDABuilder.createLight(TOKEN)
                 .addEventListeners(new SlashCommandListenerAdapter())
+                .addEventListeners(new ButtonInteractionListenerAdapter())
                 .build();
 
         jda.awaitReady();
@@ -37,14 +38,25 @@ public class Main {
 
         if(config.isServerSetup()){
             //register all the commands
-
+            registerCommandsServerIsSetUp();
         } else {
             //only register the setup command
-            competitionServer.updateCommands().addCommands(
-                    Commands.slash("setup","setup this server for a competition").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
-            ).queue(
-                    (e) -> {System.out.println("Commands successfully registered");},
-                    (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
+            registerCommandsServerNotSetUp();
         }
+    }
+
+    public static void registerCommandsServerNotSetUp(){
+        competitionServer.updateCommands().addCommands(
+                Commands.slash("setup","setup this server for a competition").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+        ).queue(
+                (e) -> {System.out.println("Commands successfully registered");},
+                (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
+    }
+
+    public static void registerCommandsServerIsSetUp(){
+        competitionServer.updateCommands().addCommands(
+                Commands.slash("reset","Reset this server to a similar state as when the competition was set up").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+        ).queue((e) -> {System.out.println("Commands successfully registered");},
+                (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }
 }
