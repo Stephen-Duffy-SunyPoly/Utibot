@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.modals.Modal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 
 public class SlashCommandListenerAdapter extends ListenerAdapter {

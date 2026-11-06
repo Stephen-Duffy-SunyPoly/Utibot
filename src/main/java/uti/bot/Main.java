@@ -32,6 +32,7 @@ public class Main {
                 .addEventListeners(new ButtonInteractionListenerAdapter())
                 .addEventListeners(new ModalRecievedListenerAdapter())
                 .addEventListeners(new AutocompleteListenerAdapter())
+                .addEventListeners(new UserContextListenerAdapter())
                 .build();
 
         jda.awaitReady();
@@ -62,7 +63,8 @@ public class Main {
     public static void registerCommandsServerIsSetUp(){
         competitionServer.updateCommands().addCommands(
                 Commands.slash("reset","Reset this server to a similar state as when the competition was set up").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
-                Commands.slash("team","Manage your team status").addOption(OptionType.STRING,"command","The team specific command to execute", true, true)
+                Commands.slash("team","Manage your team status").addOption(OptionType.STRING,"command","The team specific command to execute", true, true),
+                Commands.user("invite to team")
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }
