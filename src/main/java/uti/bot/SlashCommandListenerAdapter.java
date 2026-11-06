@@ -62,27 +62,29 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }
         } else {
-            if(command.equals("leave")){
-                Team t = user.getTeam();
-                user.setTeam(null);
-                event.reply("You have left "+t.getName()).queue();
-                if(t.getNumberOfMembers() == 0){
-                    TeamManager.getInstance().deleteTeam(t);
+            switch (command) {
+                case "leave" -> {
+                    Team t = user.getTeam();
+                    user.setTeam(null);
+                    event.reply("You have left " + t.getName()).queue();
+                    Main.competitionServer.removeRoleFromMember(event.getUser(),t.getRole()).queue();
+                    if (t.getNumberOfMembers() == 0) {
+                        TeamManager.getInstance().deleteTeam(t);
+                    }
                 }
-            } else if(command.equals("list")){
-                ArrayList<User> teamMemers = user.getTeam().getMembers();
-                StringBuilder response = new StringBuilder(user.getTeam().getName() + " has the following members: ");
-                for(User u: teamMemers){
-                    response.append("\n ").append(u.getName());
+                case "list" -> {
+                    ArrayList<User> teamMemers = user.getTeam().getMembers();
+                    StringBuilder response = new StringBuilder(user.getTeam().getName() + " has the following members: ");
+                    for (User u : teamMemers) {
+                        response.append("\n ").append(u.getName());
+                    }
+                    event.reply(response.toString()).queue();
                 }
-                event.reply(response.toString()).queue();
-            } else if(command.equals("invite")){
-                event.replyModal(Modal.create("team-invite","Invite to Team")
+                case "invite" -> event.replyModal(Modal.create("team-invite", "Invite to Team")
                         .addComponents(
                                 Label.of("User", EntitySelectMenu.create("user", EntitySelectMenu.SelectTarget.USER).setRequired(true).build())
                         ).build()).queue();
-            } else {
-                event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
+                default -> event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }
         }
 
