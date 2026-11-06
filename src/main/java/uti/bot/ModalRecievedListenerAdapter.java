@@ -202,6 +202,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             }
                             problem.setHigherIsBetter(higherMapping.getAsBoolean());
                             ProblemManager.getInstance().save();
+                            ProblemManager.getInstance().updateProblemRanking(problem);
                             event.reply("Updated problem ranking").queue();
                             //"prob-edit-info "
                         } else if(event.getModalId().startsWith("prob-edit-info ")){

@@ -62,10 +62,28 @@ public class ProblemManager {
     public void add(Problem newProblem){
         problems.add(newProblem);
         save();
+        for (int j =0;j<TeamManager.getInstance().size();j++){
+            TeamManager.getInstance().get(j).addNewScore(newProblem.isHigherIsBetter()?0:Integer.MAX_VALUE);
+        }
+        TeamManager.getInstance().size();
     }
 
     public void deleteProblem(Problem problem){
+        //get Problem id
+        int i;
+        for(i=0;i< problems.size();i++){
+            if(problem.equals(problems.get(i))){
+                break;
+            }
+        }
+
         problems.remove(problem);
+
+        for (int j =0;j<TeamManager.getInstance().size();j++){
+            TeamManager.getInstance().get(j).removeScore(i);
+        }
+        TeamManager.getInstance().size();
+
         //delete the problem folder
         Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
         //delete the channel if there is one
@@ -76,6 +94,27 @@ public class ProblemManager {
         //TODO delete all associated scores
 
         save();
+    }
+
+    public void updateProblemRanking(Problem p){
+        //get Problem id
+        int i;
+        for(i=0;i< problems.size();i++){
+            if(p.equals(problems.get(i))){
+                break;
+            }
+        }
+
+        int extremeScore = p.isHigherIsBetter()? 0:Integer.MAX_VALUE;
+        int otherExtreme = p.isHigherIsBetter()?Integer.MAX_VALUE:0;
+
+        for (int j =0;j<TeamManager.getInstance().size();j++){
+            int score = TeamManager.getInstance().get(j).getScore(i);
+            if(score == otherExtreme){
+                TeamManager.getInstance().get(j).setScore(i,extremeScore);
+            }
+        }
+        TeamManager.getInstance().size();
     }
 
     public List<String> getNameList(){

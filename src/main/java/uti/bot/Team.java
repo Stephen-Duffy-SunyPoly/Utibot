@@ -2,6 +2,7 @@ package uti.bot;
 
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -13,16 +14,30 @@ public class Team {
 
     private final long textChannelId;
 
+    private ArrayList<Integer> scores = new ArrayList<>();
+
     public Team(String name, long roleId, long textChannelId){
         this.name = name;
         this.roleId = roleId;
         this.textChannelId = textChannelId;
+        for(int i=0;i<ProblemManager.getInstance().size();i++){
+            Problem p = ProblemManager.getInstance().get(i);
+            if(p.isHigherIsBetter()){
+                scores.add(0);
+            } else {
+                scores.add(Integer.MAX_VALUE);
+            }
+        }
     }
 
     public Team(JSONObject json){
         name = json.getString("name");
         roleId = json.getLong("role");
         textChannelId = json.getLong("channel");
+        JSONArray scores = json.getJSONArray("scores");
+        for(int i=0;i< scores.length();i++){
+            this.scores.add(scores.getInt(i));
+        }
     }
 
     public JSONObject asJSON(){
@@ -30,6 +45,11 @@ public class Team {
         json.put("name",name);
         json.put("role",roleId);
         json.put("channel",textChannelId);
+        JSONArray scoresOut = new JSONArray();
+        for (Integer score : scores) {
+            scoresOut.put(score);
+        }
+        json.put("scores",scoresOut);
         return json;
     }
 
@@ -73,6 +93,22 @@ public class Team {
             }
         }
         return users;
+    }
+
+    public void removeScore(int index){
+        scores.remove(index);
+    }
+
+    public void setScore(int index,int score){
+        scores.set(index,score);
+    }
+
+    public int getScore(int index){
+        return scores.get(index);
+    }
+
+    public void addNewScore(int value){
+        scores.add(value);
     }
 
     @Override
