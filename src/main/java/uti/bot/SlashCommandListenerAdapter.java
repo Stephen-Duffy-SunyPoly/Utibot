@@ -68,6 +68,13 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 if(t.getNumberOfMembers() == 0){
                     TeamManager.getInstance().deleteTeam(t);
                 }
+            }else if(command.equals("list")){
+                ArrayList<User> teamMemers = user.getTeam().getMembers();
+                StringBuilder response = new StringBuilder(user.getTeam().getName() + " has the following members: ");
+                for(User u: teamMemers){
+                    response.append("\n ").append(u.getName());
+                }
+                event.reply(response.toString()).queue();
             } else {
                 event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }
