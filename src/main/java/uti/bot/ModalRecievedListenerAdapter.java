@@ -1,8 +1,11 @@
 package uti.bot;
 
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -69,6 +72,34 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     Main.competitionServer.addRoleToMember(discordUser,teamRole).queue();
                     channel.sendMessage("<@&"+teamRole.getId()+"> You will use this channel to communicate with your team mates and submit answers.").queue();
                     event.reply("Created team: "+teamName).queue();
+                }
+
+                case "team-invite" -> {
+                    ModalMapping userMapping = event.getValue("user");
+                    if(userMapping == null){
+                        return;
+                    }
+                    net.dv8tion.jda.api.entities.User discordUser = userMapping.getAsMentions().getUsers().getFirst();
+                    User otherUser = UserManager.getInstance().get(discordUser.getIdLong());
+                    if(otherUser == null){
+                        event.reply("That user has not yet registered for the competition").setEphemeral(true).queue();
+                        return;
+                    }
+                    if(otherUser.getTeam() != null){
+                        event.reply("That user is already on a team").setEphemeral(true).queue();
+                        return;
+                    }
+
+                    User user = UserManager.getInstance().get(event.getUser().getIdLong());
+
+                    PrivateChannel userDm = discordUser.openPrivateChannel().complete();
+                    userDm.sendMessage("## Team Invite\n"+user.getName() +" has invited you to join the team:\n`"+user.getTeam().getName()+"`")
+                            .addComponents(ActionRow.of(
+                                    Button.success("team-join-accept","Accept"),
+                                    Button.danger("cancel","Decline")
+                            )).queue();
+
+                    event.reply(otherUser.getName() +" has been invited to join your team, tell them to check their DMs").queue();
                 }
             }
         }

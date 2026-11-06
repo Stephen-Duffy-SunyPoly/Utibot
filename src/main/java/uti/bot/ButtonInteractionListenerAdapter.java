@@ -16,7 +16,20 @@ import org.jetbrains.annotations.NotNull;
 public class ButtonInteractionListenerAdapter extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-        //there is 1 exception to this, accepting team invites will happen in the DMs
+        if(!event.isFromGuild()){
+            switch (event.getButton().getCustomId()){
+                case "cancel" -> {
+                    event.deferReply(true).queue();
+                    Message message = event.getMessage();
+                    message.delete().queue();
+                    event.getHook().deleteOriginal().queue();
+                }
+                case "team-join-accept" -> {
+                    joinTeam(event);
+                }
+                case null, default -> {}
+            }
+        }
         if(event.getGuild() == null || event.getGuild().getIdLong() != Main.competitionServer.getIdLong()){
             return;
         }
@@ -46,6 +59,28 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                 }
             }
         }
+    }
+
+    void joinTeam(ButtonInteractionEvent event){
+        User user = UserManager.getInstance().get(event.getUser().getIdLong());
+        if(user.getTeam() !=  null){
+            event.reply("You are already on a team").queue();
+            return;
+        }
+        Message message = event.getMessage();
+        String [] messageData = message.getContentRaw().split("\n");
+        String teamName = messageData[2].replace("`","");
+        Team team = TeamManager.getInstance().get(teamName);
+        if(team == null){
+            event.reply("An error occurred. Team not found").queue();
+            return;
+        }
+        event.deferReply(true).queue();
+        user.setTeam(team);
+        Main.competitionServer.addRoleToMember(event.getUser(),team.getRole()).queue();
+        team.getChannel().sendMessage("<@"+user.getUserID()+"> has joined the team").queue();
+        message.delete().queue();
+        event.getHook().deleteOriginal().queue();
     }
 
     void showRegisterModal(ButtonInteractionEvent event){

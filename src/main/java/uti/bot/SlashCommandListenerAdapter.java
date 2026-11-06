@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.components.label.Label;
+import net.dv8tion.jda.api.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.components.textinput.TextInput;
 import net.dv8tion.jda.api.components.textinput.TextInputStyle;
 import net.dv8tion.jda.api.entities.Guild;
@@ -68,13 +69,18 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 if(t.getNumberOfMembers() == 0){
                     TeamManager.getInstance().deleteTeam(t);
                 }
-            }else if(command.equals("list")){
+            } else if(command.equals("list")){
                 ArrayList<User> teamMemers = user.getTeam().getMembers();
                 StringBuilder response = new StringBuilder(user.getTeam().getName() + " has the following members: ");
                 for(User u: teamMemers){
                     response.append("\n ").append(u.getName());
                 }
                 event.reply(response.toString()).queue();
+            } else if(command.equals("invite")){
+                event.replyModal(Modal.create("team-invite","Invite to Team")
+                        .addComponents(
+                                Label.of("User", EntitySelectMenu.create("user", EntitySelectMenu.SelectTarget.USER).setRequired(true).build())
+                        ).build()).queue();
             } else {
                 event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }
