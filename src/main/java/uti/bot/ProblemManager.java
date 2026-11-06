@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class ProblemManager {
@@ -77,7 +78,11 @@ public class ProblemManager {
         save();
     }
 
-    /**Completely clear team list. Deletes the team file as well
+    public List<String> getNameList(){
+        return problems.stream().map(Problem::getName).toList();
+    }
+
+    /**Completely clear problem list. Deletes the problem file as well
      */
     public void wipe(){
         problems.clear();

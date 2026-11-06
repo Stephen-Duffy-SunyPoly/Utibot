@@ -69,7 +69,19 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                             .build()).queue();
                     }
                     case "delete" -> {
-                        //confirm pop up
+                        OptionMapping pmap = event.getOption("problem");
+                        if(pmap==null){
+                            return;
+                        }
+                        Problem problem = ProblemManager.getInstance().get(pmap.getAsString());
+                        if(problem == null){
+                            event.reply("A problem with that name does not exist").setEphemeral(true).queue();
+                            return;
+                        }
+                        event.reply("Are you sure you want to delete "+problem.getName()).setEphemeral(true).addComponents(ActionRow.of(
+                                Button.danger("delete-problem","Delete"),
+                                Button.secondary("cancel","Cancel")
+                        )).queue();
                     }
                     case null, default -> {}
                 }
