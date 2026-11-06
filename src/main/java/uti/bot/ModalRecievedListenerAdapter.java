@@ -32,7 +32,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     }
                     String name = nameMapping.getAsString();
                     String email = emailMapping.getAsString();
-                    event.deferReply().queue();
+                    event.deferReply().setEphemeral(true).queue();
                     UserManager.getInstance().add(new User(userId,name,email));
                     Main.competitionServer.addRoleToMember(event.getUser(),Main.getRegisteredRole()).queue();
                     event.getHook().deleteOriginal().queue();
