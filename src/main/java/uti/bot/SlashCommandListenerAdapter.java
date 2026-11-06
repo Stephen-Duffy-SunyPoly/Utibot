@@ -2,17 +2,19 @@ package uti.bot;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.attachmentupload.AttachmentUpload;
 import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.checkbox.Checkbox;
 import net.dv8tion.jda.api.components.label.Label;
 import net.dv8tion.jda.api.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.components.textinput.TextInput;
 import net.dv8tion.jda.api.components.textinput.TextInputStyle;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.FileType;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.modals.Modal;
 import org.jetbrains.annotations.NotNull;
@@ -30,11 +32,47 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
             switch (event.getName()){
                 case "reset" ->resetServer(event);
                 case "team" -> handleTeamCommand(event);
+                case "problem" -> handleProblemCommand(event);
             }
         } else {
             if(event.getName().equals("setup")){
                 event.reply("Setting up server").queue();
                 setupServer();
+            }
+        }
+    }
+
+    void handleProblemCommand(SlashCommandInteractionEvent event){
+
+        switch (event.getSubcommandGroup()){
+            case "edit" -> {
+                switch (event.getSubcommandName()){
+                    case "name" -> {}
+                    case "higher-is-better" -> {}
+                    case "info-file" -> {}
+                    case "judge-program" -> {}
+                    case null, default -> {}
+                }
+            }
+
+            case null, default -> {
+                switch (event.getSubcommandName()){
+                    case "add" -> {
+                        event.replyModal(Modal.create("add-problem","Create Problem")
+                                .addComponents(
+                                    Label.of("Name","The problem name",TextInput.create("name",TextInputStyle.SHORT).setRequired(true).setRequiredRange(2,40).build()),
+                                    Label.of("Subjective","If this problem is subjectively scored", Checkbox.of("subjective")),
+                                    Label.of("Higher is Better","If a higher score should be consider better",Checkbox.of("higher-is-better")),
+                                    Label.of("Info file","zip file containing the problem description and test file", AttachmentUpload.create("info-file").setRequired(true).setFileTypes(FileType.ofExtension("zip")).build()),
+                                    Label.of("Jude Program","Python program for scoring submissions, not necessary for subjective problems", AttachmentUpload.create("judge-program").setRequired(false).setFileTypes(FileType.ofExtension("py")).build())
+                                )
+                            .build()).queue();
+                    }
+                    case "delete" -> {
+                        //confirm pop up
+                    }
+                    case null, default -> {}
+                }
             }
         }
     }

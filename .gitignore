@@ -46,3 +46,5 @@ bin/
 /config.json.backup
 /users.json
 /teams.json
+/problems.json
+/problems/

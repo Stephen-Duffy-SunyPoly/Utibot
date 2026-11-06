@@ -5,9 +5,12 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 
 public class Main {
 
@@ -22,6 +25,7 @@ public class Main {
         }
 
         config = new ConfigManager();
+        ProblemManager.init();
         TeamManager.init();
         UserManager.init();
 
@@ -64,7 +68,20 @@ public class Main {
         competitionServer.updateCommands().addCommands(
                 Commands.slash("reset","Reset this server to a similar state as when the competition was set up").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("team","Manage your team status").addOption(OptionType.STRING,"command","The team specific command to execute", true, true),
-                Commands.user("invite to team")
+                Commands.user("invite to team"),
+                //each sub command is shown as a different command, this feels like an awful design decision
+                Commands.slash("problem","Manage competition problems").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                        .addSubcommands(
+                                new SubcommandData("add","Create a new problem"),
+                                new SubcommandData("delete","Delete a problem").addOption(OptionType.STRING,"problem","The problem to delete",true,true)
+                        ).addSubcommandGroups(
+                                new SubcommandGroupData("edit","Edit a problem").addSubcommands(
+                                        new SubcommandData("name","Change the name of a problem").addOption(OptionType.STRING,"problem","The problem to edit",true,true),
+                                        new SubcommandData("higher-is-better","Set if a higher score is better").addOption(OptionType.STRING,"problem","The problem to edit",true,true),
+                                        new SubcommandData("info-file","change the info file that will distributed to the players").addOption(OptionType.STRING,"problem","The problem to edit",true,true),
+                                        new SubcommandData("judge-program","change the python script used to score the submissions").addOption(OptionType.STRING,"problem","The problem to edit",true,true)
+                                )
+                        )
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }

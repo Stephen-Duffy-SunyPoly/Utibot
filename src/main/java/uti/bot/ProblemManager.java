@@ -1,0 +1,79 @@
+package uti.bot;
+
+import org.json.JSONArray;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
+
+public class ProblemManager {
+    private final ArrayList<Problem> problems = new ArrayList<>();
+
+    private static ProblemManager instance;
+
+    private ProblemManager(){
+        //load the file (if it exsists)
+        try {
+            JSONArray teamFile = Util.loadJSONArray("problems.json");
+            for(int i=0;i<teamFile.length();i++){
+                problems.add(new Problem(teamFile.getJSONObject(i)));
+            }
+        } catch (IOException e) {
+            System.err.println("Unable to open problems file. Creating new file.");
+            save();
+        }
+
+    }
+
+    public static synchronized void init(){
+        if(instance == null){
+            instance = new ProblemManager();
+        }
+    }
+
+    public static ProblemManager getInstance(){
+        return instance;
+    }
+
+    public synchronized void save(){
+        JSONArray userFile = new JSONArray();
+        for (Problem team : problems) {
+            userFile.put(team.asJSON());
+        }
+        Util.saveJSONArray(userFile,"problems.json");
+    }
+
+    public int size(){
+        return problems.size();
+    }
+
+    public Problem get(int index){
+        return problems.get(index);
+    }
+
+    public Problem get(String name){
+        Optional<Problem> match = problems.stream().filter(team -> team.getName().equals(name)).findFirst();
+        return match.orElse(null);
+    }
+
+    public void add(Problem newProblem){
+        problems.add(newProblem);
+        save();
+    }
+
+    public void deleteTeam(Problem problem){
+        problems.remove(problem);
+        //TODO
+//        problem.getChannel().delete().queue();
+
+        save();
+    }
+
+    /**Completely clear team list. Deletes the team file as well
+     */
+    public void wipe(){
+        problems.clear();
+        boolean ignored = new File("problems.json").delete();
+    }
+}
