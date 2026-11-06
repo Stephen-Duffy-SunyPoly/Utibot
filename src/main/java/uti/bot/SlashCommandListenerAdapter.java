@@ -54,6 +54,11 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
             event.reply("You need to be on a team to use this feature").setEphemeral(true).queue();
             return;
         }
+        long teamChannel = user.getTeam().getTextChannelId();
+        if(event.getChannelIdLong() != teamChannel){
+            event.reply("This command can only be used in your team channel: <#"+teamChannel+">").setEphemeral(true).queue();
+            return;
+        }
         OptionMapping probOm = event.getOption("problem");
         if(probOm == null){
             return;

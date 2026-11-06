@@ -70,12 +70,7 @@ public class ProblemManager {
 
     public void deleteProblem(Problem problem){
         //get Problem id
-        int i;
-        for(i=0;i< problems.size();i++){
-            if(problem.equals(problems.get(i))){
-                break;
-            }
-        }
+        int i = getProblemIndex(problem);
 
         problems.remove(problem);
 
@@ -98,12 +93,7 @@ public class ProblemManager {
 
     public void updateProblemRanking(Problem p){
         //get Problem id
-        int i;
-        for(i=0;i< problems.size();i++){
-            if(p.equals(problems.get(i))){
-                break;
-            }
-        }
+        int i = getProblemIndex(p);
 
         int extremeScore = p.isHigherIsBetter()? 0:Integer.MAX_VALUE;
         int otherExtreme = p.isHigherIsBetter()?Integer.MAX_VALUE:0;
@@ -115,6 +105,16 @@ public class ProblemManager {
             }
         }
         TeamManager.getInstance().size();
+    }
+
+    public int getProblemIndex(Problem p) {
+        int i;
+        for(i=0;i< problems.size();i++){
+            if(p.equals(problems.get(i))){
+                break;
+            }
+        }
+        return i;
     }
 
     public List<String> getNameList(){

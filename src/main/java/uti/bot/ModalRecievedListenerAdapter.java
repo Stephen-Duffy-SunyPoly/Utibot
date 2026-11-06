@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.*;
 import java.util.EnumSet;
@@ -171,6 +172,64 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     //any other setup to run automatic submissions
                 }
 
+                case "subjective-score" ->{
+                    ModalMapping scoreMapping = event.getValue("score");
+                    if(scoreMapping == null){
+                        return;
+                    }
+                    String scoreString = scoreMapping.getAsString();
+                    try {
+                        int score = Integer.parseInt(scoreString);
+                        long channelId = event.getChannelIdLong();
+                        Problem problem = null;
+                        for (int i=0;i<ProblemManager.getInstance().size();i++){
+                            if(channelId == ProblemManager.getInstance().get(i).getSubjectiveScoringChannelId()){
+                                problem =  ProblemManager.getInstance().get(i);
+                                break;
+                            }
+                        }
+                        if(problem == null){
+                            event.reply("Unable to locate problem!").setEphemeral(true).queue();
+                            return;
+                        }
+                        Message message = event.getMessage();
+                        if(message == null){
+                            event.reply("Unable to fin source message!").setEphemeral(true).queue();
+                            return;
+                        }
+                        Role teamRole = message.getMentions().getRoles().getFirst();
+                        //find the team
+                        Team team = null;
+                        for(int i=0;i<TeamManager.getInstance().size();i++){
+                            if(TeamManager.getInstance().get(i).getRoleId() == teamRole.getIdLong()){
+                                team = TeamManager.getInstance().get(i);
+                            }
+                        }
+                        if(team == null){
+                            event.reply("Unable to find team").setEphemeral(true).queue();
+                            return;
+                        }
+                        //we can now register the score
+                        int problemIndex = ProblemManager.getInstance().getProblemIndex(problem);
+
+                        int currentScore = team.getScore(problemIndex);
+                        if(problem.isHigherIsBetter() == score > currentScore){
+                            //better score
+                            team.setScore(problemIndex,score);
+                            team.getChannel().sendMessage("You achieved a new high score of "+score+" in "+problem.getName()).queue();
+                            TeamManager.getInstance().save();
+                        } else {
+                            team.getChannel().sendMessage("You received a score of "+score+" in "+problem.getName()+" your best was: "+currentScore).queue();
+                        }
+                        event.getMessage().editMessageComponents().queue();
+                        event.deferReply().queue();
+                        event.getHook().deleteOriginal().queue();
+                    } catch (Exception e){
+                        event.reply("Scores must be integers!").setEphemeral(true).queue();
+                        return;
+                    }
+                }
+
                 default -> {
                     if(event.getModalId().startsWith("prob-edit-")){
                         if(event.getModalId().startsWith("prob-edit-name ")){
@@ -257,7 +316,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             }
                             Message.Attachment attachment = attachMapping.getAsAttachmentList().getFirst();
                             //delete current judder
-                            new File("problems/" + problem.getName() + "/" + problem.getJudgePythonProgramPath()).delete();
+                            boolean ignored = new File("problems/" + problem.getName() + "/" + problem.getJudgePythonProgramPath()).delete();
                             //download the new one
                             byte[] judgeBytes = Downloader.downloadContent(attachment.getUrl());
                             try (FileOutputStream fos = new FileOutputStream("problems/" + problem.getName() + "/" +attachment.getFileName())){
@@ -271,6 +330,41 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             ProblemManager.getInstance().save();
                             event.reply("Judging program updated for "+problemName).queue();
                         }
+                    } else if(event.getModalId().startsWith("submit-prob ")){
+                        //validate submissions accepted
+                        String problemName = event.getModalId().substring("submit-prob ".length());
+                        Problem problem = ProblemManager.getInstance().get(problemName);
+                        if(problem == null){
+                            return;
+                        }
+                        ModalMapping attachMapping = event.getValue("submission");
+                        if(attachMapping == null){
+                            return;
+                        }
+                        Message.Attachment attachment = attachMapping.getAsAttachmentList().getFirst();
+
+                        User user = UserManager.getInstance().get(event.getUser().getIdLong());
+                        if(user == null){
+                            event.reply("You need to register for the event first.").setEphemeral(true).queue();
+                            return;
+                        }
+                        if (user.getTeam() == null) {
+                            event.reply("You need to be on a team to use this feature").setEphemeral(true).queue();
+                            return;
+                        }
+                        Team team = user.getTeam();
+
+                        FileUpload file = attachment.getProxy().downloadAsFileUpload(attachment.getFileName());
+                        if(problem.isSubjective()){
+                            problem.getScoringChannel().sendMessage("<@&"+team.getRoleId()+"> has made a submission")
+                                    .addFiles(file)
+                                    .addComponents(ActionRow.of(Button.primary("score-submission","Score")))
+                                    .queue();
+                            event.reply("Submission made for "+problemName).queue();
+                        } else {
+                            //TODO auto scoring code here
+                        }
+
                     }
                 }
             }

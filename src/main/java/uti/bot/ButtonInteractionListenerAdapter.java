@@ -53,6 +53,8 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
 
                 case "delete-problem" -> deleteProblem(event);
 
+                case "score-submission" -> subjectiveScore(event);
+
                 case null ->{
                     System.err.println("null button event");
                 }
@@ -62,6 +64,11 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                 }
             }
         }
+    }
+
+    private void subjectiveScore(ButtonInteractionEvent event) {
+        event.replyModal(Modal.create("subjective-score","Submit Score")
+                .addComponents(Label.of("Score",TextInput.create("score",TextInputStyle.SHORT).setRequired(true).setMaxLength(16).build())).build()).queue();
     }
 
     private void deleteProblem(ButtonInteractionEvent event) {
