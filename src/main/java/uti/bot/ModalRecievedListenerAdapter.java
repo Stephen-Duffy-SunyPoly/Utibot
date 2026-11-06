@@ -13,12 +13,10 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 public class ModalRecievedListenerAdapter extends ListenerAdapter {
     @Override
@@ -170,8 +168,109 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     ProblemManager.getInstance().add(problem);
 
                     event.getHook().sendMessage("Created new problem "+name).queue();
-
                     //any other setup to run automatic submissions
+                }
+
+                default -> {
+                    if(event.getModalId().startsWith("prob-edit-")){
+                        if(event.getModalId().startsWith("prob-edit-name ")){
+                            String problemName = event.getModalId().substring("prob-edit-name ".length());
+                            Problem problem = ProblemManager.getInstance().get(problemName);
+                            if(problem == null){
+                                return;
+                            }
+                            ModalMapping nameMapping = event.getValue("name");
+                            if(nameMapping == null){
+                                return;
+                            }
+                            String newName = nameMapping.getAsString();
+                            problem.setName(newName);
+                            if(problem.isSubjective()){
+                                Objects.requireNonNull(Main.competitionServer.getGuildChannelById(problem.getSubjectiveScoringChannelId())).getManager().setName("Problem "+newName+" scoring").queue();
+                            }
+                            event.reply("Changed problem name to: "+newName).queue();
+
+                        } else if(event.getModalId().startsWith("prob-edit-high ")){
+                            String problemName = event.getModalId().substring("prob-edit-high ".length());
+                            Problem problem = ProblemManager.getInstance().get(problemName);
+                            if(problem == null){
+                                return;
+                            }
+                            ModalMapping higherMapping = event.getValue("higher-is-better");
+                            if(higherMapping == null){
+                                return;
+                            }
+                            problem.setHigherIsBetter(higherMapping.getAsBoolean());
+                            ProblemManager.getInstance().save();
+                            event.reply("Updated problem ranking").queue();
+                            //"prob-edit-info "
+                        } else if(event.getModalId().startsWith("prob-edit-info ")){
+                            String problemName = event.getModalId().substring("prob-edit-info ".length());
+                            Problem problem = ProblemManager.getInstance().get(problemName);
+                            if(problem == null){
+                                return;
+                            }
+                            ModalMapping attachMapping = event.getValue("info-file");
+                            if(attachMapping == null){
+                                return;
+                            }
+                            Message.Attachment attachment = attachMapping.getAsAttachmentList().getFirst();
+                            //copy the judge program (if one exsists)
+                            byte[] judgeProgram = null;
+                            if(!problem.getJudgePythonProgramPath().isEmpty()){
+                                try(FileInputStream fis = new FileInputStream("problems/"+problem.getName()+"/"+problem.getJudgePythonProgramPath())){
+                                    judgeProgram = fis.readAllBytes();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            //delete the folder
+                            Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
+                            //download the attachment
+                            byte[] newInfo = Downloader.downloadContent(attachment.getUrl());
+                            //extract the attachment
+                            try {
+                                Downloader.decompressZipBytesToDisc(newInfo,"problems/"+problem.getName()+"/");
+                                if(!problem.getJudgePythonProgramPath().isEmpty()) {
+                                    //recopy the judge program
+                                    try (FileOutputStream fos = new FileOutputStream("problems/" + problem.getName() + "/" + problem.getJudgePythonProgramPath())) {
+                                        assert judgeProgram != null;
+                                        fos.write(judgeProgram);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            problem.setInfoFileLink(attachment.getUrl());
+                            ProblemManager.getInstance().save();
+                            event.reply("Replaced the problem info for: "+problemName).queue();
+                        } else if (event.getModalId().startsWith("prob-edit-juge ")){
+                            String problemName = event.getModalId().substring("prob-edit-juge ".length());
+                            Problem problem = ProblemManager.getInstance().get(problemName);
+                            if(problem == null){
+                                return;
+                            }
+                            ModalMapping attachMapping = event.getValue("judge-program");
+                            if(attachMapping == null){
+                                return;
+                            }
+                            Message.Attachment attachment = attachMapping.getAsAttachmentList().getFirst();
+                            //delete current judder
+                            new File("problems/" + problem.getName() + "/" + problem.getJudgePythonProgramPath()).delete();
+                            //download the new one
+                            byte[] judgeBytes = Downloader.downloadContent(attachment.getUrl());
+                            try (FileOutputStream fos = new FileOutputStream("problems/" + problem.getName() + "/" +attachment.getFileName())){
+                                fos.write(judgeBytes);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            //save the file path
+                            problem.setJudgePythonProgramPath(attachment.getFileName());
+                            ProblemManager.getInstance().save();
+                            event.reply("Judging program updated for "+problemName).queue();
+                        }
+                    }
                 }
             }
         }

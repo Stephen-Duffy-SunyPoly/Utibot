@@ -3,6 +3,11 @@ package uti.bot;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class Problem {
     private String name;
 
@@ -62,7 +67,16 @@ public class Problem {
     }
 
     public void setName(String name) {
+        //change the name of the folder!
+        Path originalFolder = new File("problems/"+this.name+"/").getAbsoluteFile().toPath();
+        Path newFolder = new File("problems/"+name+"/").getAbsoluteFile().toPath();
+        try {
+            Files.move(originalFolder,newFolder);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         this.name = name;
+        ProblemManager.getInstance().save();
     }
 
     public boolean isHigherIsBetter() {

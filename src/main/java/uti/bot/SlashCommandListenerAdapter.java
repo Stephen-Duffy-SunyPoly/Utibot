@@ -46,11 +46,50 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
 
         switch (event.getSubcommandGroup()){
             case "edit" -> {
+                OptionMapping pnop = event.getOption("problem");
+                if(pnop == null){
+                    System.out.println("problem name was null");
+                    return;
+                }
+                String problemName = pnop.getAsString();
+                Problem problem = ProblemManager.getInstance().get(problemName);
+                if(problem == null){
+                    event.reply("No problem by that name found").setEphemeral(true).queue();
+                    return;
+                }
                 switch (event.getSubcommandName()){
-                    case "name" -> {}
-                    case "higher-is-better" -> {}
-                    case "info-file" -> {}
-                    case "judge-program" -> {}
+                    case "name" -> {
+                        String modalId = "prob-edit-name "+problemName;
+                        event.replyModal(Modal.create(modalId,"Edit Problem Name")
+                            .addComponents(
+                                    Label.of("Name","current name: "+problemName,TextInput.create("name",TextInputStyle.SHORT).setRequired(true).setRequiredRange(2,40).setValue(problemName).build())
+                            ).build()).queue();
+                    }
+                    case "higher-is-better" -> {
+                        String modalId = "prob-edit-high "+problemName;
+                        event.replyModal(Modal.create(modalId,"Edit Problem score ranking")
+                                .addComponents(
+                                        Label.of("Is higher better","is a higher score better?: "+problemName,Checkbox.of("higher-is-better",problem.isHigherIsBetter()))
+                                ).build()).queue();
+                    }
+                    case "info-file" -> {
+                        String modalId = "prob-edit-info "+problemName;
+                        event.replyModal(Modal.create(modalId,"Edit Problem info file")
+                                .addComponents(
+                                        Label.of("replace info content","Warning: this will reset the content of the problem folder",AttachmentUpload.create("info-file").setRequired(true).setFileTypes(FileType.ofExtension("zip")).build())
+                                ).build()).queue();
+                    }
+                    case "judge-program" -> {
+                        if(problem.getJudgePythonProgramPath().isEmpty()){
+                            event.reply("that problem does not have a judging program").setEphemeral(true).queue();
+                            return;
+                        }
+                        String modalId = "prob-edit-juge "+problemName;
+                        event.replyModal(Modal.create(modalId,"Edit Problem judge program")
+                                .addComponents(
+                                        Label.of("replace judge program","upload a new judging program",AttachmentUpload.create("judge-program").setRequired(true).setFileTypes(FileType.ofExtension("py")).build())
+                                ).build()).queue();
+                    }
                     case null, default -> {}
                 }
             }

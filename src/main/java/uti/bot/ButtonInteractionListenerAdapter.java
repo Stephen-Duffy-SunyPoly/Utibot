@@ -43,9 +43,10 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                     event.getHook().deleteOriginal().queue();
                 }
                 case "reset-server" -> {
-                    event.deferReply(true).queue();
-                    resetServer();
+                    event.deferReply(true).complete();
+                    event.getMessage().delete().complete();
                     event.getHook().deleteOriginal().queue();
+                    resetServer();
                 }
 
                 case "register" -> showRegisterModal(event);
