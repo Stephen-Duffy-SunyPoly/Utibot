@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 
 public class ModalRecievedListenerAdapter extends ListenerAdapter {
     @Override
@@ -125,15 +126,21 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     if(!subjective && judgeProgramMapping == null){
                         return;
                     }
-                    event.deferReply().queue();
                     long subjectiveChannelId = 0;
                     if(!subjective){
+                        List<Message.Attachment> atl = judgeProgramMapping.getAsAttachmentList();
+                        if(atl.isEmpty()){
+                            return;
+                        }
+                        event.deferReply().queue();
                         judgeProgramAttachment = judgeProgramMapping.getAsAttachmentList().getFirst();
                     } else {
+                        event.deferReply().queue();
                         //create a channel is subjective
-                        Channel subjectievChannel = Main.competitionServer.createTextChannel("Problem "+name+" scoring",Main.competitionServer.getCategoryById(Main.config.getJudgeCategoryId()))
+                        MessageChannel subjectiveChannel = Main.competitionServer.createTextChannel("Problem "+name+" scoring",Main.competitionServer.getCategoryById(Main.config.getJudgeCategoryId()))
                                 .syncPermissionOverrides().setTopic("Submissions for the problem "+name+" will appear here").complete();
-                        subjectiveChannelId = subjectievChannel.getIdLong();
+                        subjectiveChannelId = subjectiveChannel.getIdLong();
+                        subjectiveChannel.sendMessage("Team submissions for the "+name+" problem will appear here. Make sure to score them in a timely manner").queue();
                     }
 
                     //create a problem folder
