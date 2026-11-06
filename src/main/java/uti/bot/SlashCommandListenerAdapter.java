@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -31,6 +32,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
     }
 
     void setupServer(){
+        long botId = Main.competitionServer.getJDA().getSelfUser().getIdLong();
         //create a registered role
         //set the new role to be able to view channels by default
         Role registerdRole = Main.competitionServer.createRole().setName("Registered").setPermissions(Permission.VIEW_CHANNEL).complete();
@@ -50,7 +52,8 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
 
         MessageChannel registerChannel = Main.competitionServer.createTextChannel("Register").addRolePermissionOverride(atEveryone.getIdLong(),
                 registerChannelEveryoneAllowed,
-                registerChannelEveryoneDeny).addMemberPermissionOverride(registerdRole.getJDA().getSelfUser().getIdLong(), EnumSet.of(Permission.MESSAGE_SEND),null)
+                registerChannelEveryoneDeny).addMemberPermissionOverride(botId, EnumSet.of(Permission.MESSAGE_SEND),null)
+                .setTopic("Register your self for the competition here")
                 .complete();
         Main.config.setRegisterChannelId(registerChannel.getIdLong());
         //send a registration message in that channel
@@ -63,10 +66,23 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
 
         //create the team category
         //deny registered permission to view this category
+        Category teamCategory = Main.competitionServer.createCategory("Team").addRolePermissionOverride(registerdRole.getIdLong(),
+                null,EnumSet.of(Permission.VIEW_CHANNEL))
+                .addMemberPermissionOverride(botId,EnumSet.of(Permission.VIEW_CHANNEL),null)
+                .complete();
+        Main.config.setTeamCategoryId(teamCategory.getIdLong());
 
         //create the judge category
         //deny registered permission to view this category
+        Category judgeCategory = Main.competitionServer.createCategory("Judge").addRolePermissionOverride(registerdRole.getIdLong(),
+                        null,EnumSet.of(Permission.VIEW_CHANNEL))
+                .addMemberPermissionOverride(botId,EnumSet.of(Permission.VIEW_CHANNEL),null)
+                .complete();
+        Main.config.setJudgeCategoryId(judgeCategory.getIdLong());
         //create the admin channel in this category
+        MessageChannel adminChannel = Main.competitionServer.createTextChannel("Admin",judgeCategory).setTopic("A private space for competition administration").complete();
+        Main.config.setAdminChannelId(adminChannel.getIdLong());
+        adminChannel.sendMessage("This is the admin channel. Use this channel to configure and administration the challenge. Users can not see this channel.").queue();
 
 
 

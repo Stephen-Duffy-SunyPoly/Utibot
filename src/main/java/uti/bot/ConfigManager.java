@@ -13,6 +13,10 @@ public class ConfigManager {
     private long registerChannelId;
     private long registerChannelMessageId;
 
+    private long teamCategoryId;
+    private long judgeCategoryId;
+    private long adminChannelId;
+
     private String registerChannelMessage = "# Register Message!\nSet the content of this message in the config file";
 
     public ConfigManager(){
@@ -57,6 +61,22 @@ public class ConfigManager {
                 saveFile = true;
             }
 
+            if(configJson.has("team-category")){
+                teamCategoryId = configJson.getLong("team-category");
+            } else {
+                saveFile = true;
+            }
+            if(configJson.has("judge-category")){
+                judgeCategoryId = configJson.getLong("judge-category");
+            } else {
+                saveFile = true;
+            }
+            if(configJson.has("admin-channel")){
+                adminChannelId = configJson.getLong("admin-channel");
+            } else {
+                saveFile = true;
+            }
+
         } catch (IOException e) {
             System.err.println("Failed to load config file, generating new config.");
             save();
@@ -75,6 +95,11 @@ public class ConfigManager {
         configJson.put("register-channel",registerChannelId);
         configJson.put("register-message",registerChannelMessage);
         configJson.put("register-message-id",registerChannelMessageId);
+        configJson.put("team-category",teamCategoryId);
+        configJson.put("judge-category",judgeCategoryId);
+        configJson.put("admin-channel",adminChannelId);
+
+
 
         Util.saveJSONObject(configJson,"config.json");
     }
@@ -119,5 +144,32 @@ public class ConfigManager {
 
     public void setRegisterChannelMessageId(long registerChannelMessageId) {
         this.registerChannelMessageId = registerChannelMessageId;
+    }
+
+    public long getAdminChannelId() {
+        return adminChannelId;
+    }
+
+    public long getJudgeCategoryId() {
+        return judgeCategoryId;
+    }
+
+    public long getTeamCategoryId() {
+        return teamCategoryId;
+    }
+
+    public void setAdminChannelId(long adminChannelId) {
+        this.adminChannelId = adminChannelId;
+        save();
+    }
+
+    public void setJudgeCategoryId(long judgeCategoryId) {
+        this.judgeCategoryId = judgeCategoryId;
+        save();
+    }
+
+    public void setTeamCategoryId(long teamCategoryId) {
+        this.teamCategoryId = teamCategoryId;
+        save();
     }
 }
