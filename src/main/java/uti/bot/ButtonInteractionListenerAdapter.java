@@ -1,12 +1,16 @@
 package uti.bot;
 
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.components.label.Label;
+import net.dv8tion.jda.api.components.textinput.TextInput;
+import net.dv8tion.jda.api.components.textinput.TextInputStyle;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.modals.Modal;
 import org.jetbrains.annotations.NotNull;
 
 public class ButtonInteractionListenerAdapter extends ListenerAdapter {
@@ -30,6 +34,8 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                     event.getHook().deleteOriginal().queue();
                 }
 
+                case "register" -> showRegisterModal(event);
+
                 case null ->{
                     System.err.println("null button event");
                 }
@@ -39,6 +45,15 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                 }
             }
         }
+    }
+
+    void showRegisterModal(ButtonInteractionEvent event){
+        event.replyModal(Modal.create(
+                "register", "Register for Competition"
+        ).addComponents(
+                Label.of("Name","Enter your name here", TextInput.create("name", TextInputStyle.SHORT).setRequiredRange(4,50).setRequired(true).build()),
+                Label.of("Email", "Enter your email here (school preferred)", TextInput.create("email", TextInputStyle.SHORT).setRequiredRange(4,50).setRequired(true).build())
+        ).build()).queue();
     }
 
     void resetServer(){
