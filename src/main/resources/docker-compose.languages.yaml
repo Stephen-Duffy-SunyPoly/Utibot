@@ -1,0 +1,32 @@
+services:
+  python_app:
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMAGE: python:latest
+    image: utibot-submission-python_app
+
+  gcc_app:
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMAGE: gcc:latest
+    image: utibot-submission-gcc_app
+
+#  node_app:
+#    build:
+#      context: ..
+#      dockerfile: ./Dockerfile
+#      args:
+#        BASE_IMAGE: node:latest
+#    image: utibot-submission-node_app
+
+  java_app:
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+      args:
+        BASE_IMAGE: eclipse-temurin:17-jdk-jammy
+    image: utibot-submission-java_app

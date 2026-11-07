@@ -2,6 +2,10 @@ package uti.bot;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -87,5 +91,28 @@ public class Downloader {
                 }
             }
         boolean ignored = toDelete.delete();
+    }
+
+    public static void copyFolder(Path source, Path target) throws IOException {
+        // Traverse the source directory structure
+        try (Stream<Path> stream = Files.walk(source)) {
+            stream.forEach(sourcePath -> {
+                try {
+                    // Resolve the target path for each file/folder relative to the root target
+                    Path targetPath = target.resolve(source.relativize(sourcePath));
+
+                    // Copy the file or directory
+                    Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to copy: " + sourcePath, e);
+                }
+            });
+        } catch (RuntimeException e) {
+            // Unpack and throw the actual IOException
+            if (e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            }
+            throw e;
+        }
     }
 }
