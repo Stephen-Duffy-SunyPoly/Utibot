@@ -166,10 +166,11 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
 
                     Problem problem = new Problem(name,higherIsBetter,subjective,infoFileAttachment.getUrl(),judgeProgramPath,subjectiveChannelId);
                     ProblemManager.getInstance().add(problem);
-                    if(!subjective){
-                        //have the images regenerated
-                        new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
-                    }
+                    //this is handled by problem.add
+//                    if(!subjective){
+//                        //have the images regenerated
+//                        new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
+//                    }
 
                     event.getHook().sendMessage("Created new problem "+name).queue();
                     //any other setup to run automatic submissions

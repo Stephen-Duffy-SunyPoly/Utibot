@@ -67,11 +67,9 @@ public class ProblemManager {
         }
         TeamManager.getInstance().save();
         //rebuild the containers
-        ContainerManager.getInstance().deleteLanguageContainers();
-        try {
-            ContainerManager.getInstance().buildLanguageImages();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(!newProblem.isSubjective()){
+            //have the images regenerated
+            new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
         }
     }
 
@@ -94,11 +92,9 @@ public class ProblemManager {
             chanel.delete().queue();
         }
 
-        ContainerManager.getInstance().deleteLanguageContainers();
-        try {
-            ContainerManager.getInstance().buildLanguageImages();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(!problem.isSubjective()){
+            //have the images regenerated
+            new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
         }
 
         save();

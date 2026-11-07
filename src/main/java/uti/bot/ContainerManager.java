@@ -11,10 +11,7 @@ import com.github.dockerjava.transport.DockerHttpClient;
 
 import java.io.*;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ContainerManager {
 
@@ -162,12 +159,21 @@ public class ContainerManager {
         cleanUpDanglingImages();
         if(!generationRequested){
             generatingContainers = false;
+            try {
+                if (Main.config.isServerSetup() && Main.competitionServer != null) {
+                    Objects.requireNonNull(Main.competitionServer.getTextChannelById(Main.config.getAdminChannelId())).sendMessage("Container Images finished reloading").queue();
+                }
+            } catch (Exception ignored){}
         }
     }
 
     public void deleteLanguageContainers(){
         for(String image: createdContainerNames){
-            dockerClient.removeImageCmd("utibot-submission-"+image+"_app").exec();
+            try {
+                dockerClient.removeImageCmd("utibot-submission-" + image + "_app").exec();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
         createdContainerNames.clear();
     }

@@ -122,9 +122,9 @@ public class SubmissionRunner implements Runnable {
                     //take the first item output and print it to the score file
                     "score=$(echo $output | cut -d \" \" -f1); "+
                     //take the second output item and print its content to the output file
-                    //"filepath=$(echo $output | cut -d \" \" -f2-); "+
+                    "filepath=$(echo $output | cut -d \" \" -f2-); "+
                     "echo $score > {CONTAINER_SCORE_PATH}; "+
-//                    "cat \"$filepath\" > {CONTAINER_OUTPUT_PATH}; "+
+                    "cat \"$filepath\" > {CONTAINER_OUTPUT_PATH}; "+
                 "fi";
 
         command = command.replace("{PROBLEM_NAME}","\""+problem.getName()+"\"");
