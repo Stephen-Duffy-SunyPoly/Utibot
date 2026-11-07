@@ -136,7 +136,7 @@ public class SubmissionRunner implements Runnable {
 
         ArrayList<Bind> binds = new ArrayList<>();
         for(String hostPath: volumes.keySet()){
-            binds.add(new Bind(hostPath,new Volume(volumes.get(hostPath).bind()), AccessMode.rw));
+            binds.add(new Bind(new File(hostPath).getAbsolutePath(),new Volume(volumes.get(hostPath).bind()), AccessMode.rw));
         }
         HostConfig hostConfig = HostConfig.newHostConfig().withBinds(binds).withNetworkMode("none");
 

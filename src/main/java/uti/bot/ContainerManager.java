@@ -1,7 +1,6 @@
 package uti.bot;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -26,7 +25,10 @@ public class ContainerManager {
 
     private static ContainerManager instance;
 
-    private ArrayList<String> createdContainerNames = new ArrayList<>();
+    private final ArrayList<String> createdContainerNames = new ArrayList<>();
+
+    private boolean generatingContainers = false;
+    private boolean generationRequested = false;
 
     public static synchronized void init(){
         if(instance == null){
@@ -58,14 +60,31 @@ public class ContainerManager {
         dockerClient.pingCmd().exec();
     }
 
-    public void buildLanguageContainers() throws IOException {
+    public void requestRegenerateImages(){
+        synchronized (createdContainerNames) {
+            generationRequested = true;
+        }
+        try {
+            buildLanguageImages();
+        } catch (IOException e) {
+            generatingContainers =false;
+            throw new RuntimeException(e);
+        }
+    }
+
+    public synchronized void buildLanguageImages() throws IOException {
         if(!new File("problems/").exists()){
             //if no problems exists, then just do nothing
             return;
         }
-        if(!createdContainerNames.isEmpty()){
-            throw new RuntimeException("Attempted to re create containers without deleting them first");
+        generatingContainers = true;
+        synchronized (createdContainerNames){
+            generationRequested = false;
         }
+//        if(!createdContainerNames.isEmpty()){
+//            throw new RuntimeException("Attempted to re create containers without deleting them first");
+//        }
+        createdContainerNames.clear();
 
         System.out.println("regenerating container images");
 
@@ -84,33 +103,46 @@ public class ContainerManager {
                 .withShowAll(true)
                 .exec();
 
+        ArrayList<Thread> generatorThreads = new ArrayList<>();
         for(Language lang: Language.values()){
             String imageName = "utibot-submission-"+lang.image+"_app";
+            if(!createdContainerNames.contains(lang.image)) {
+            generatorThreads.add(new Thread( () -> {
+                    //if the image already exists (like from a previous run) delete it
+                    for (Image image : images) {
+                        String[] tags = image.getRepoTags();
 
-            if(!createdContainerNames.contains(lang.image)){
-                //if the image already exists (like from a previous run) delete it
-                for (Image image : images) {
-                    String[] tags = image.getRepoTags();
-
-                    if (tags != null && Arrays.asList(tags).contains(imageName)) {
-                        dockerClient.removeImageCmd(image.getId())
-                                .withForce(true)
-                                .exec();
+                        if (tags != null && Arrays.asList(tags).contains(imageName)) {
+                            dockerClient.removeImageCmd(image.getId())
+                                    .withForce(true)
+                                    .exec();
+                        }
                     }
-                }
 
-                System.out.println("building image for: "+lang.language);
-                String imageId = dockerClient.buildImageCmd()
-                        .withDockerfile(dockerfile)
-                        .withBaseDirectory(buildContext)
-                        .withBuildArg("BASE_IMAGE", lang.baseImage)
-                        .withTags(Set.of(imageName))
-                        .start()
-                        .awaitImageId();
-
-                createdContainerNames.add(lang.image);
-                System.out.println("Built image: " + imageId);
+                    System.out.println("building image for: " + lang.language);
+                    String imageId = dockerClient.buildImageCmd()
+                            .withDockerfile(dockerfile)
+                            .withBaseDirectory(buildContext)
+                            .withBuildArg("BASE_IMAGE", lang.baseImage)
+                            .withTags(Set.of(imageName))
+                            .start()
+                            .awaitImageId();
+                    System.out.println("Built image: " + imageId);
+                }));
             }
+            createdContainerNames.add(lang.image);
+            generatorThreads.getLast().start();
+        }
+        for(Thread t:generatorThreads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        //if in the process of generation, another generation request came in
+        if(!generationRequested){
+            generatingContainers = false;
         }
     }
 
@@ -122,6 +154,13 @@ public class ContainerManager {
     }
 
     public void runContainer(String imageName, String command, HostConfig hostConfig){
+        while(generatingContainers){
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
         String containerId = null;
         try {
             var container = dockerClient.createContainerCmd(imageName)

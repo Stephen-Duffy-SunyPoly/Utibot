@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -167,6 +166,10 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
 
                     Problem problem = new Problem(name,higherIsBetter,subjective,infoFileAttachment.getUrl(),judgeProgramPath,subjectiveChannelId);
                     ProblemManager.getInstance().add(problem);
+                    if(!subjective){
+                        //have the images regenerated
+                        new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
+                    }
 
                     event.getHook().sendMessage("Created new problem "+name).queue();
                     //any other setup to run automatic submissions
@@ -246,6 +249,9 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             problem.setName(newName);
                             if(problem.isSubjective()){
                                 Objects.requireNonNull(Main.competitionServer.getGuildChannelById(problem.getSubjectiveScoringChannelId())).getManager().setName("Problem "+newName+" scoring").queue();
+                            } else {
+                                //have the images regenerated
+                                new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
                             }
                             event.reply("Changed problem name to: "+newName).queue();
 
@@ -303,6 +309,10 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             }
                             problem.setInfoFileLink(attachment.getUrl());
                             ProblemManager.getInstance().save();
+                            if(!problem.isSubjective()) {
+                                //have the images regenerated
+                                new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
+                            }
                             event.reply("Replaced the problem info for: "+problemName).queue();
                         } else if (event.getModalId().startsWith("prob-edit-juge ")){
                             String problemName = event.getModalId().substring("prob-edit-juge ".length());
@@ -328,6 +338,8 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             //save the file path
                             problem.setJudgePythonProgramPath(attachment.getFileName());
                             ProblemManager.getInstance().save();
+                            //reload the containers
+                            new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
                             event.reply("Judging program updated for "+problemName).queue();
                         }
                     } else if(event.getModalId().startsWith("submit-prob ")){

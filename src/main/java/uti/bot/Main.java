@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -36,7 +35,8 @@ public class Main {
         UserManager.init();
 
         try {
-            ContainerManager.getInstance().buildLanguageContainers();
+            System.out.println("Preparing to build containers, if this is the first time it may take a while. This is due to download a few gigabytes of base images");
+            ContainerManager.getInstance().buildLanguageImages();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

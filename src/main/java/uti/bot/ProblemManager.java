@@ -69,7 +69,7 @@ public class ProblemManager {
         //rebuild the containers
         ContainerManager.getInstance().deleteLanguageContainers();
         try {
-            ContainerManager.getInstance().buildLanguageContainers();
+            ContainerManager.getInstance().buildLanguageImages();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -96,7 +96,7 @@ public class ProblemManager {
 
         ContainerManager.getInstance().deleteLanguageContainers();
         try {
-            ContainerManager.getInstance().buildLanguageContainers();
+            ContainerManager.getInstance().buildLanguageImages();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
