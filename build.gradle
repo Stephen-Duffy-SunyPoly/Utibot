@@ -17,6 +17,10 @@ dependencies {
     implementation 'org.slf4j:slf4j-reload4j:2.0.20'
     // Source: https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:${json_version}")
+    // Source: https://mvnrepository.com/artifact/com.github.docker-java/docker-java
+    implementation("com.github.docker-java:docker-java:${docker_java_version}")
+    // Source: https://mvnrepository.com/artifact/com.github.docker-java/docker-java-transport-httpclient5
+    implementation ("com.github.docker-java:docker-java-transport-httpclient5:${docker_java_transport_version}")
 }
 
 application {

@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 
+import java.io.IOException;
+
 public class Main {
 
     public static Guild competitionServer;
@@ -24,12 +26,21 @@ public class Main {
             System.exit(1);
         }
 
+        //load / generate config here
         config = new ConfigManager();
+
+        ContainerManager.init();
+
         ProblemManager.init();
         TeamManager.init();
         UserManager.init();
 
-        //load / generate config here
+        try {
+            ContainerManager.getInstance().buildLanguageContainers();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
 
         JDA jda = JDABuilder.createLight(TOKEN)
                 .addEventListeners(new SlashCommandListenerAdapter())

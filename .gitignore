@@ -48,3 +48,6 @@ bin/
 /teams.json
 /problems.json
 /problems/
+/javadoc/
+Dockerfile
+!src/main/resources/Dockerfile

@@ -66,6 +66,13 @@ public class ProblemManager {
             TeamManager.getInstance().get(j).addNewScore(newProblem.isHigherIsBetter()?0:Integer.MAX_VALUE);
         }
         TeamManager.getInstance().size();
+        //rebuild the containers
+        ContainerManager.getInstance().deleteLanguageContainers();
+        try {
+            ContainerManager.getInstance().buildLanguageContainers();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void deleteProblem(Problem problem){
@@ -86,7 +93,13 @@ public class ProblemManager {
         if(chanel!=null){
             chanel.delete().queue();
         }
-        //TODO delete all associated scores
+
+        ContainerManager.getInstance().deleteLanguageContainers();
+        try {
+            ContainerManager.getInstance().buildLanguageContainers();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         save();
     }
