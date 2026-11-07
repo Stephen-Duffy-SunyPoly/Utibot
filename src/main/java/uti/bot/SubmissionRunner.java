@@ -148,7 +148,7 @@ public class SubmissionRunner implements Runnable {
         for(String hostPath: volumes.keySet()){
             binds.add(new Bind(new File(hostPath).getAbsolutePath(),new Volume(volumes.get(hostPath).bind()), AccessMode.rw));
         }
-        HostConfig hostConfig = HostConfig.newHostConfig().withBinds(binds).withNetworkMode("none");
+        HostConfig hostConfig = HostConfig.newHostConfig().withBinds(binds).withNetworkMode("none").withAutoRemove(true);
 
         //judge it!!!
         ContainerManager.getInstance().runContainer(dockerImage,command,hostConfig);

@@ -69,7 +69,8 @@ public class Main {
 
     public static void registerCommandsServerNotSetUp(){
         competitionServer.updateCommands().addCommands(
-                Commands.slash("setup","setup this server for a competition").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
+                Commands.slash("setup","setup this server for a competition").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
+                Commands.slash("shutdown","Shutdown the discord bot, terminating the process.").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
         ).queue(
                 (e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
@@ -93,7 +94,8 @@ public class Main {
                                         new SubcommandData("judge-program","change the python script used to score the submissions").addOption(OptionType.STRING,"problem","The problem to edit",true,true)
                                 )
                         ),
-                Commands.slash("submit","Submit a response for a problem").addOption(OptionType.STRING,  "problem", "The problem to submit for",true,true)
+                Commands.slash("submit","Submit a response for a problem").addOption(OptionType.STRING,  "problem", "The problem to submit for",true,true),
+                Commands.slash("shutdown","Shutdown the discord bot, terminating the process.").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }

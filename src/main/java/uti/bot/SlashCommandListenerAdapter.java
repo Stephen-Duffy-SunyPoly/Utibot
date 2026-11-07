@@ -35,13 +35,26 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 case "team" -> handleTeamCommand(event);
                 case "problem" -> handleProblemCommand(event);
                 case "submit" -> handleSubmit(event);
+                case "shutdown" -> shutdownBot(event);
             }
         } else {
             if(event.getName().equals("setup")){
                 event.reply("Setting up server").queue();
                 setupServer();
+            } else if(event.getName().equals("shutdown")){
+                shutdownBot(event);
             }
         }
+    }
+
+    private void shutdownBot(SlashCommandInteractionEvent event) {
+        event.reply("Shutting bot down!").complete();
+        event.getJDA().shutdownNow();
+        System.out.println("JDA shutdown");
+        //shutdown docker stuff
+        ContainerManager.getInstance().shutdown();
+        System.out.println("Exiting");
+        System.exit(0);
     }
 
     private void handleSubmit(SlashCommandInteractionEvent event) {
@@ -73,12 +86,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         AttachmentUpload.Builder attachmentField = AttachmentUpload.create("submission").setRequired(true);
         if(!problem.isSubjective()){
             attachmentField.setFileTypes(
-                    Arrays.stream(Language.values()).map(lang -> FileType.ofExtension(lang.extension)).toArray(FileType[]::new)
-//                    FileType.ofExtension("cpp"),
-//                    FileType.ofExtension("c"),
-//                    FileType.ofExtension("java"),
-//                    FileType.ofExtension("py")
-
+                Arrays.stream(Language.values()).map(lang -> FileType.ofExtension(lang.extension)).toArray(FileType[]::new)
             );
         }
         event.replyModal(Modal.create("submit-prob "+problem.getName(),"Create Submission for "+problem.getName()).addComponents(Label.of("file","Your submission",attachmentField.build())).build()).queue();

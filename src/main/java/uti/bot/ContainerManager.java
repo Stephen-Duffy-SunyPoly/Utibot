@@ -30,6 +30,8 @@ public class ContainerManager {
     private boolean generatingContainers = false;
     private boolean generationRequested = false;
 
+    private boolean shutdown = false;
+
     public static synchronized void init(){
         if(instance == null){
             instance = new ContainerManager();
@@ -58,6 +60,22 @@ public class ContainerManager {
 
         dockerClient = DockerClientImpl.getInstance(standard, httpClient);
         dockerClient.pingCmd().exec();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shutdown();
+            System.out.println("Docker cleanup complete.");
+        }));
+    }
+
+    public void shutdown() {
+        if(!shutdown) {
+            shutdown = true;
+            try {
+                dockerClient.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public void requestRegenerateImages(){
@@ -141,6 +159,7 @@ public class ContainerManager {
             }
         }
         //if in the process of generation, another generation request came in
+        cleanUpDanglingImages();
         if(!generationRequested){
             generatingContainers = false;
         }
@@ -200,6 +219,25 @@ public class ContainerManager {
 
     public void deleteDockerIgnore(){
        boolean ignored = new File(".dockerignore").delete();
+    }
+
+    public void cleanUpDanglingImages(){
+        List<Image> danglingImages = dockerClient.listImagesCmd()
+                .withDanglingFilter(true)
+                .exec();
+
+        for (Image image : danglingImages) {
+            try {
+                dockerClient.removeImageCmd(image.getId())
+                    .withForce(false)
+                    .exec();
+            } catch (Exception e) {
+                System.err.println(
+                        "Could not remove image " + image.getId()
+                                + ": " + e.getMessage()
+                );
+            }
+        }
     }
 
 }

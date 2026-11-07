@@ -189,6 +189,7 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
         Main.config.setServerSetup(false);
         //remove the docker containers
         ContainerManager.getInstance().deleteLanguageContainers();
+        ContainerManager.getInstance().deleteDockerIgnore();
         Main.registerCommandsServerNotSetUp();
         System.out.println("Server fully reset to initial configuration");
     }
