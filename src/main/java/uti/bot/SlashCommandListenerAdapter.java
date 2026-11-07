@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.modals.Modal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 public class SlashCommandListenerAdapter extends ListenerAdapter {
@@ -72,12 +73,12 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         AttachmentUpload.Builder attachmentField = AttachmentUpload.create("submission").setRequired(true);
         if(!problem.isSubjective()){
             attachmentField.setFileTypes(
-                    FileType.ofExtension("cpp"),
-                    FileType.ofExtension("c"),
-                    FileType.ofExtension("java"),
-                    FileType.ofExtension("py")
-                    //add more file types here
-//                    ,FileType.ofExtension("rs")
+                    Arrays.stream(Language.values()).map(lang -> FileType.ofExtension(lang.extension)).toArray(FileType[]::new)
+//                    FileType.ofExtension("cpp"),
+//                    FileType.ofExtension("c"),
+//                    FileType.ofExtension("java"),
+//                    FileType.ofExtension("py")
+
             );
         }
         event.replyModal(Modal.create("submit-prob "+problem.getName(),"Create Submission for "+problem.getName()).addComponents(Label.of("file","Your submission",attachmentField.build())).build()).queue();

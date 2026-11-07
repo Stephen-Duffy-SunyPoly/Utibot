@@ -216,10 +216,10 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         if(problem.isHigherIsBetter() == score > currentScore){
                             //better score
                             team.setScore(problemIndex,score);
-                            team.getChannel().sendMessage("You achieved a new high score of "+score+" in "+problem.getName()).queue();
+                            team.getChannel().sendMessage("You achieved a new team high score of "+score+" in "+problem.getName()).queue();
                             TeamManager.getInstance().save();
                         } else {
-                            team.getChannel().sendMessage("You received a score of "+score+" in "+problem.getName()+" your best was: "+currentScore).queue();
+                            team.getChannel().sendMessage("You received a score of "+score+" in "+problem.getName()+"\nyour team best is: "+currentScore).queue();
                         }
                         event.getMessage().editMessageComponents().queue();
                         event.deferReply().queue();
@@ -362,7 +362,16 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                     .queue();
                             event.reply("Submission made for "+problemName).queue();
                         } else {
-                            //TODO auto scoring code here
+                            SubmissionRunner runner;
+                            try {
+                                runner = new SubmissionRunner(event,problem,team,attachment);
+                            } catch (IOException e) {
+                                event.reply("An error occurred!").setEphemeral(true).queue();
+                                throw new RuntimeException(e);
+                            }
+                            event.deferReply().queue();
+                            //compile and run the program
+                            Thread.ofVirtual().start(runner);
                         }
 
                     }
