@@ -114,7 +114,7 @@ public class ContainerManager {
 
                         if (tags != null && Arrays.asList(tags).contains(imageName)) {
                             dockerClient.removeImageCmd(image.getId())
-                                    .withForce(true)
+                                    .withForce(false)
                                     .exec();
                         }
                     }
@@ -127,11 +127,11 @@ public class ContainerManager {
                             .withTags(Set.of(imageName))
                             .start()
                             .awaitImageId();
-                    System.out.println("Built image: " + imageId);
+                    System.out.println("Built image: " + imageId+" ("+lang.language+")");
                 }));
+                generatorThreads.getLast().start();
             }
             createdContainerNames.add(lang.image);
-            generatorThreads.getLast().start();
         }
         for(Thread t:generatorThreads){
             try {
@@ -164,15 +164,16 @@ public class ContainerManager {
         String containerId = null;
         try {
             var container = dockerClient.createContainerCmd(imageName)
-                    .withCmd(command)
+                    .withCmd("bash","-c",command)
                     .withHostConfig(hostConfig)
                     .exec();
             containerId = container.getId();
             dockerClient.startContainerCmd(containerId).exec();
 
-            dockerClient.waitContainerCmd(containerId)
+            long statusCode = dockerClient.waitContainerCmd(containerId)
                     .start()
                     .awaitStatusCode();
+            System.out.println("Container status code: "+statusCode);
         } finally {
             if (containerId != null) {
                 dockerClient.removeContainerCmd(containerId)

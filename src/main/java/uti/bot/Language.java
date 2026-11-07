@@ -9,8 +9,8 @@ public enum Language {
     //{TIMEOUT_SCORE} the score to use upon failure
     //{CONTAINER_SCORE_PATH}
     //{CONTAINER_OUTPUT_PATH}
-    C("gcc","C","gcc {CONTAINER_USER_FILE} -o a.out -std=c17", "./a.out","gcc:latest","c"),
-    CPP("gcc","C++","g++ {CONTAINER_USER_FILE} -o a.out -std=c++20", "./a.out","gcc:latest","cpp"),
+    C("gcc","C","gcc {CONTAINER_USER_FILE} -o a.out -std=c17 2>&1", "./a.out","gcc:latest","c"),
+    CPP("gcc","C++","g++ {CONTAINER_USER_FILE} -o a.out -std=c++20 2>&1", "./a.out","gcc:latest","cpp"),
     JAVA("java", "Java","", "java {CONTAINER_USER_FILE}", "eclipse-temurin:17-jdk-jammy","java"),
     PY("python", "Python", "", "python3 {CONTAINER_USER_FILE}","python:latest","py")
     ;

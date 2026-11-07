@@ -65,7 +65,7 @@ public class ProblemManager {
         for (int j =0;j<TeamManager.getInstance().size();j++){
             TeamManager.getInstance().get(j).addNewScore(newProblem.isHigherIsBetter()?0:Integer.MAX_VALUE);
         }
-        TeamManager.getInstance().size();
+        TeamManager.getInstance().save();
         //rebuild the containers
         ContainerManager.getInstance().deleteLanguageContainers();
         try {
@@ -84,7 +84,7 @@ public class ProblemManager {
         for (int j =0;j<TeamManager.getInstance().size();j++){
             TeamManager.getInstance().get(j).removeScore(i);
         }
-        TeamManager.getInstance().size();
+        TeamManager.getInstance().save();
 
         //delete the problem folder
         Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
@@ -117,7 +117,7 @@ public class ProblemManager {
                 TeamManager.getInstance().get(j).setScore(i,extremeScore);
             }
         }
-        TeamManager.getInstance().size();
+        TeamManager.getInstance().save();
     }
 
     public int getProblemIndex(Problem p) {

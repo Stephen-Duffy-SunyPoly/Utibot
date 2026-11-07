@@ -97,33 +97,43 @@ public class SubmissionRunner implements Runnable {
         //{TIMEOUT_SCORE} the score to use upon failure
         //{CONTAINER_SCORE_PATH}
         //{CONTAINER_OUTPUT_PATH}
-        command = "'bash -c \"cd \\\"/app/{PROBLEM_NAME}\\\" &&"+
+
+        //note that bash -c are being append separately when being passed in
+        command = "cd \"/app/{PROBLEM_NAME}\" &&"+
                 //f'{compiler} \"{container_user_file}\" -o a.out;
-                submissionLanguage.preProcessCommand +
+                "compile_output=$("+submissionLanguage.preProcessCommand + "); "+
                 "status=$?;"+
-                "if [ $status -ne 0 ]; then"+
+                "if [ $status -ne 0 ]; then "+
                     "echo {TIMEOUT_SCORE} > {CONTAINER_SCORE_PATH};"+
                     "echo Compilation failed > {CONTAINER_OUTPUT_PATH};"+
+                    "echo $compile_output >> {CONTAINER_OUTPUT_PATH};"+
                     "exit 1;"+
                 "fi;"+
                 //this is where the running actually is goes
+                //note: the judeg program is expected to provide output of: <score> <logfile>
                 "output=$(timeout 60s python3 \""+problem.getJudgePythonProgramPath()+"\" "+submissionLanguage.evaluationCommand +");"+
                 "status=$?; "+
+                //if the program crashed / timed out
                 "if [ $status -eq 124 ]; then "+
                     "echo {TIMEOUT_SCORE} > {CONTAINER_SCORE_PATH}; "+
                     "echo Your program timed out > {CONTAINER_OUTPUT_PATH};"+
-                "else"+
+                "else "+
+                //if it completed successfully
+                    //take the first item output and print it to the score file
                     "score=$(echo $output | cut -d \" \" -f1); "+
-                    "filepath=$(echo $output | cut -d \" \" -f2-); "+
+                    //take the second output item and print its content to the output file
+                    //"filepath=$(echo $output | cut -d \" \" -f2-); "+
                     "echo $score > {CONTAINER_SCORE_PATH}; "+
-                    "cat \"$filepath\" > {CONTAINER_OUTPUT_PATH}; "+
-                "fi\"";
+//                    "cat \"$filepath\" > {CONTAINER_OUTPUT_PATH}; "+
+                "fi";
 
         command = command.replace("{PROBLEM_NAME}","\""+problem.getName()+"\"");
         command = command.replace("{CONTAINER_USER_FILE}","\""+containerUserFile+"\"");
         command = command.replace("{TIMEOUT_SCORE}",""+timeoutScore);
         command = command.replace("{CONTAINER_SCORE_PATH}",container_score_path);
         command = command.replace("{CONTAINER_OUTPUT_PATH}", container_output_path);
+
+        System.out.println("Running command:"+command);
 
         this.event = event;
         this.team = team;
