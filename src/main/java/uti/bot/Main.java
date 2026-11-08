@@ -97,7 +97,8 @@ public class Main {
                         ),
                 Commands.slash("submit","Submit a response for a problem").addOption(OptionType.STRING,  "problem", "The problem to submit for",true,true),
                 Commands.slash("shutdown","Shutdown the discord bot, terminating the process.").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
-                Commands.slash("problems","Get all the problems currently active in the competition")
+                Commands.slash("problems","Get all the problems currently active in the competition"),
+                Commands.slash("leaderboard","Get the current competition leader board")
         ).queue((e) -> {System.out.println("Commands successfully registered");},
                 (e) -> {System.err.println("Failed to register commands!");e.printStackTrace();});
     }

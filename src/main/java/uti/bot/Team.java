@@ -99,6 +99,13 @@ public class Team {
         ProblemManager pr = ProblemManager.getInstance();
         Problem problem = pr.get(problemId);
         String result = problem.getName() + "  |  "+scores.get(problemId);
+        int betterThanMe = getRankForProblem(problemId, problem);
+        result += "  |  " + (betterThanMe + 1);
+
+        return result;
+    }
+
+    public int getRankForProblem(int problemId, Problem problem) {
         int myScore = scores.get(problemId);
         int betterThanMe = 0;
         for(int i=0;i<TeamManager.getInstance().size();i++){
@@ -106,9 +113,7 @@ public class Team {
                 betterThanMe ++;
             }
         }
-        result += "  |  " + (betterThanMe + 1);
-
-        return result;
+        return betterThanMe;
     }
 
     public void removeScore(int index){

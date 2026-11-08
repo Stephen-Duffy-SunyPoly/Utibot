@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 public class SlashCommandListenerAdapter extends ListenerAdapter {
     @Override
@@ -37,6 +38,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 case "submit" -> handleSubmit(event);
                 case "shutdown" -> shutdownBot(event);
                 case "problems" -> showProblems(event);
+                case "leaderboard" -> showLeaderBoard(event);
             }
         } else {
             if(event.getName().equals("setup")){
@@ -46,6 +48,18 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 shutdownBot(event);
             }
         }
+    }
+
+    private void showLeaderBoard(SlashCommandInteractionEvent event) {
+        //TODO check if the comp has started yet
+        TeamManager tm = TeamManager.getInstance();
+        List<TeamManager.TeamMapping> rankings = tm.getRankOfTeams();
+        StringBuilder results = new StringBuilder();
+        results.append("## Current team rankings:\n");
+        for(int i=0;i< rankings.size();i++){
+            results.append(i+1).append(". ").append(tm.get(rankings.get(i).teamIndex()).getName()).append("\n");
+        }
+        event.reply(results.toString()).queue();
     }
 
     private void showProblems(SlashCommandInteractionEvent event) {
