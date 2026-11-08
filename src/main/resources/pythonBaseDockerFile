@@ -1,0 +1,20 @@
+# this is the image that all others will be built on top of
+FROM python:3.13-slim-bookworm
+
+# Prevent Python from generating unnecessary bytecode
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Make Python output appear immediately
+ENV PYTHONUNBUFFERED=1
+
+# Install only essential utilities
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        bash \
+        coreutils \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+CMD ["python3", "--version"]

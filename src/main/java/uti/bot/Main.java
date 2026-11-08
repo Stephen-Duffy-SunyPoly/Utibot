@@ -19,6 +19,13 @@ public class Main {
     public static ConfigManager config;
 
     public static void main(String[] args) throws InterruptedException {
+        boolean forImageRebuild = false;
+        for (String arg : args) {
+            if (arg.equals("rebuild-base-image")) {
+                forImageRebuild = true;
+            }
+        }
+
         final String TOKEN = System.getenv("token");
         if(TOKEN == null){
             System.err.println("Bot token not found, please provide your bot token through the 'token' environment variable");
@@ -36,6 +43,7 @@ public class Main {
 
         try {
             System.out.println("Preparing to build containers, if this is the first time it may take a while. This is due to download a few gigabytes of base images");
+            ContainerManager.getInstance().buildBaseImages(forImageRebuild);
             ContainerManager.getInstance().buildLanguageImages();
         } catch (IOException e) {
             throw new RuntimeException(e);

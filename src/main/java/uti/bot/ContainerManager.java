@@ -1,6 +1,8 @@
 package uti.bot;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectImageResponse;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -84,6 +86,79 @@ public class ContainerManager {
         } catch (IOException e) {
             generatingContainers =false;
             throw new RuntimeException(e);
+        }
+    }
+
+    public boolean imageExists(String imageName) {
+        try {
+            // Attempt to inspect the image by its name (e.g., "ubuntu:latest") or ID
+            InspectImageResponse response = dockerClient.inspectImageCmd(imageName).exec();
+            return response != null;
+        } catch (NotFoundException e) {
+            // The library throws NotFoundException if the image does not exist locally
+            return false;
+        }
+    }
+
+    public void buildBaseImages(boolean force){
+        //check if the base python image exsists
+        if(!imageExists("utibot/python-base:latest") || force) {
+            //if not,
+            //create a folder structure for the images to be built from
+            boolean ignored = new File("base/python").mkdirs();
+            ignored = new File("base/gcc").mkdirs();
+            ignored = new File("base/java").mkdirs();
+            //extract all the docker files
+            try(InputStream extractDockerFile = ContainerManager.class.getClassLoader().getResourceAsStream("pythonBaseDockerFile")){
+                try(FileOutputStream dockerFileOut = new FileOutputStream("base/python/DockerFile")){
+                    assert extractDockerFile != null;
+                    extractDockerFile.transferTo(dockerFileOut);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try(InputStream extractDockerFile = ContainerManager.class.getClassLoader().getResourceAsStream("gccDockerFile")){
+                try(FileOutputStream dockerFileOut = new FileOutputStream("base/gcc/DockerFile")){
+                    assert extractDockerFile != null;
+                    extractDockerFile.transferTo(dockerFileOut);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try(InputStream extractDockerFile = ContainerManager.class.getClassLoader().getResourceAsStream("javaBaseDockerFile")){
+                try(FileOutputStream dockerFileOut = new FileOutputStream("base/java/DockerFile")){
+                    assert extractDockerFile != null;
+                    extractDockerFile.transferTo(dockerFileOut);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            //build the python image
+            System.out.println("Building python base image");
+            dockerClient.buildImageCmd()
+                    .withDockerfile(new File("base/python/DockerFile"))
+                    .withBaseDirectory(new File("base/python/"))
+                    .withTags(Set.of("utibot/python-base"))
+                    .start()
+                    .awaitImageId();
+            //build the other language images
+            System.out.println("Python base image complete\nBuilding gcc base image");
+            dockerClient.buildImageCmd()
+                    .withDockerfile(new File("base/gcc/DockerFile"))
+                    .withBaseDirectory(new File("base/gcc/"))
+                    .withTags(Set.of("utibot/gcc-base"))
+                    .start()
+                    .awaitImageId();
+            System.out.println("Gcc base image complete\nBuilding java base image");
+            dockerClient.buildImageCmd()
+                    .withDockerfile(new File("base/java/DockerFile"))
+                    .withBaseDirectory(new File("base/java/"))
+                    .withTags(Set.of("utibot/java-base"))
+                    .start()
+                    .awaitImageId();
+            System.out.println("Java base image complete\nFinished building base images");
+            //delete the folder structure
+            Downloader.recursiveDelete(new File("base/"));
         }
     }
 

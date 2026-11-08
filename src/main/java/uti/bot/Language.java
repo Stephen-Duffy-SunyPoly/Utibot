@@ -9,10 +9,10 @@ public enum Language {
     //{TIMEOUT_SCORE} the score to use upon failure
     //{CONTAINER_SCORE_PATH}
     //{CONTAINER_OUTPUT_PATH}
-    C("gcc","C","gcc {CONTAINER_USER_FILE} -o a.out -std=c17 2>&1", "./a.out","gcc:latest","c"),
-    CPP("gcc","C++","g++ {CONTAINER_USER_FILE} -o a.out -std=c++20 2>&1", "./a.out","gcc:latest","cpp"),
-    JAVA("java", "Java","", "java {CONTAINER_USER_FILE}", "eclipse-temurin:17-jdk-jammy","java"),
-    PY("python", "Python", "", "python3 {CONTAINER_USER_FILE}","python:latest","py")
+    C("gcc","C","gcc {CONTAINER_USER_FILE} -o a.out -std=c17 2>&1", "./a.out","utibot/gcc-base:latest","c"),
+    CPP("gcc","C++","g++ {CONTAINER_USER_FILE} -o a.out -std=c++20 2>&1", "./a.out","utibot/gcc-base:latest","cpp"),
+    JAVA("java", "Java","", "java {CONTAINER_USER_FILE}", "utibot/java-base","java"),
+    PY("python", "Python", "", "python3 {CONTAINER_USER_FILE}","utibot/python-base:latest","py")
     ;
 
     /**The docker image to use*/

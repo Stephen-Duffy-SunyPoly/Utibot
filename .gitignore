@@ -53,3 +53,4 @@ Dockerfile
 !src/main/resources/Dockerfile
 submissions/
 .dockerignore
+base/
