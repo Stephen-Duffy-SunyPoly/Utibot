@@ -36,6 +36,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 case "problem" -> handleProblemCommand(event);
                 case "submit" -> handleSubmit(event);
                 case "shutdown" -> shutdownBot(event);
+                case "problems" -> showProblems(event);
             }
         } else {
             if(event.getName().equals("setup")){
@@ -44,6 +45,14 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
             } else if(event.getName().equals("shutdown")){
                 shutdownBot(event);
             }
+        }
+    }
+
+    private void showProblems(SlashCommandInteractionEvent event) {
+        //TODO check if the comp has started yet
+        event.reply("Here are the problems:").complete();
+        for (int i=0;i<ProblemManager.getInstance().size();i++){
+            ProblemManager.getInstance().get(i).displayProblem(event.getChannel());
         }
     }
 
