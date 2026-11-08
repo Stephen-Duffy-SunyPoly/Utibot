@@ -85,7 +85,8 @@ public class Main {
                 Commands.slash("problem","Manage competition problems").setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                         .addSubcommands(
                                 new SubcommandData("add","Create a new problem"),
-                                new SubcommandData("delete","Delete a problem").addOption(OptionType.STRING,"problem","The problem to delete",true,true)
+                                new SubcommandData("delete","Delete a problem").addOption(OptionType.STRING,"problem","The problem to delete",true,true),
+                                new SubcommandData("preview", "Preview a problem listing").addOption(OptionType.STRING, "problem","The problem to preview",true,true)
                         ).addSubcommandGroups(
                                 new SubcommandGroupData("edit","Edit a problem").addSubcommands(
                                         new SubcommandData("name","Change the name of a problem").addOption(OptionType.STRING,"problem","The problem to edit",true,true),

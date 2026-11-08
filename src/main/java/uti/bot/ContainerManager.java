@@ -198,7 +198,7 @@ public class ContainerManager {
             long statusCode = dockerClient.waitContainerCmd(containerId)
                     .start()
                     .awaitStatusCode();
-            System.out.println("Container status code: "+statusCode);
+//            System.out.println("Container status code: "+statusCode);
         } finally {
             try {
                 if (containerId != null) {

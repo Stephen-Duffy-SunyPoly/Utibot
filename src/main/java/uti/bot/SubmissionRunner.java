@@ -138,7 +138,7 @@ public class SubmissionRunner implements Runnable {
         command = command.replace("{CONTAINER_SCORE_PATH}",container_score_path);
         command = command.replace("{CONTAINER_OUTPUT_PATH}", container_output_path);
 
-        System.out.println("Running command:"+command);
+//        System.out.println("Running command:"+command);
 
         this.event = event;
         this.team = team;

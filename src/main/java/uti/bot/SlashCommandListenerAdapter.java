@@ -172,6 +172,21 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                                 Button.secondary("cancel","Cancel")
                         )).queue();
                     }
+
+                    case "preview" ->{
+                        OptionMapping pmap = event.getOption("problem");
+                        if(pmap==null){
+                            return;
+                        }
+                        Problem problem = ProblemManager.getInstance().get(pmap.getAsString());
+                        if(problem == null){
+                            event.reply("A problem with that name does not exist").setEphemeral(true).queue();
+                            return;
+                        }
+                        problem.displayProblem(event.getChannel());
+                        event.deferReply().queue();
+                        event.getHook().deleteOriginal().queue();
+                    }
                     case null, default -> {}
                 }
             }

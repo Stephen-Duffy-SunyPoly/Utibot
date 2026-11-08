@@ -1,10 +1,12 @@
 package uti.bot;
 
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -116,5 +118,16 @@ public class Problem {
             return null;
         }
         return Main.competitionServer.getTextChannelById(subjectiveScoringChannelId);
+    }
+
+    public void displayProblem(MessageChannel channel){
+        try {
+            FileUpload file = FileUpload.fromData(URI.create(infoFileLink).toURL().openStream(),name+".zip");
+            channel.sendMessage("# "+name+"\n- Scoring type: "+(subjective?"subjective":"automatic")+"\n- Score ranking: "+(higherIsBetter?"Higher is better":"Lower is better"))
+                    .addFiles(file)
+                    .queue();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
