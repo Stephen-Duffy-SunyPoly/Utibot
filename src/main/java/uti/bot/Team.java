@@ -120,7 +120,7 @@ public class Team {
         scores.remove(index);
     }
 
-    public void setScore(int index,int score){
+    public synchronized void setScore(int index,int score){
         scores.set(index,score);
     }
 

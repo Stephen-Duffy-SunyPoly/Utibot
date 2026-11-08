@@ -15,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class ButtonInteractionListenerAdapter extends ListenerAdapter {
     @Override
-    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-        if(!event.isFromGuild()){
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {//when a button press event is received from discord
+        if(!event.isFromGuild()){//if the button press was in a DM
             switch (event.getButton().getCustomId()){
                 case "cancel" -> {
                     event.deferReply(true).queue();
@@ -24,12 +24,12 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
                     message.delete().queue();
                     event.getHook().deleteOriginal().queue();
                 }
-                case "team-join-accept" -> {
-                    joinTeam(event);
-                }
+                case "team-join-accept" -> joinTeam(event);
+
                 case null, default -> {}
             }
         }
+        //only respond to other button presses from the specific comp server
         if(event.getGuild() == null || event.getGuild().getIdLong() != Main.competitionServer.getIdLong()){
             return;
         }
@@ -96,6 +96,10 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
         Team team = TeamManager.getInstance().get(teamName);
         if(team == null){
             event.reply("An error occurred. Team not found").queue();
+            return;
+        }
+        if(team.getNumberOfMembers() >= 4){
+            event.reply("Unfortunately, this team is full").queue();
             return;
         }
         event.deferReply(true).queue();

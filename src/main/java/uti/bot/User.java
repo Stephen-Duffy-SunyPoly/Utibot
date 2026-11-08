@@ -9,8 +9,6 @@ public class User {
 
     private Team team;
 
-    //TODO team
-
     public User(long userID, String name, String email){
         this.userID = userID;
         this.name = name;

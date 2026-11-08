@@ -81,7 +81,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
     }
 
     private void handleSubmit(SlashCommandInteractionEvent event) {
-        //TODO check if comp is started
+        //TODO check if comp is started and not ended
         User user = UserManager.getInstance().get(event.getUser().getIdLong());
         if(user == null){
             event.reply("You need to register for the event first.").setEphemeral(true).queue();
