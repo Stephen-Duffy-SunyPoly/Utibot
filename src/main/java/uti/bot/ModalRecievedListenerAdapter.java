@@ -3,6 +3,7 @@ package uti.bot;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.api.utils.FileUpload;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.util.EnumSet;
@@ -35,10 +37,18 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         return;
                     }
                     String name = nameMapping.getAsString();
+                    if(!Util.isValidName(name)){
+                        event.reply("You entered an invalid name. Please enter a valid name").setEphemeral(true).queue();
+                        return;
+                    }
                     String email = emailMapping.getAsString();
                     event.deferReply().setEphemeral(true).queue();
                     UserManager.getInstance().add(new User(userId,name,email));
                     Main.competitionServer.addRoleToMember(event.getUser(),Main.getRegisteredRole()).queue();
+                    Member member = event.getMember();
+                    if(member!=null) {
+                        member.modifyNickname(name).queue();
+                    }
                     event.getHook().deleteOriginal().queue();
 
                 }
@@ -54,7 +64,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         return;
                     }
                     teamName = teamName.trim();
-                    if(teamName.isEmpty()){
+                    if(teamName.isEmpty() || !Util.isValidName(teamName)){
                         event.reply("Invalid team name").setEphemeral(true).queue();
                         return;
                     }
@@ -117,6 +127,14 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         return;
                     }
                     String name = nameMapping.getAsString();
+                    if(!Util.isValidName(name)){
+                        event.reply("Invalid problem name").setEphemeral(true).queue();
+                        return;
+                    }
+                    if(ProblemManager.getInstance().getNameList().contains(name)){
+                        event.reply("A problem with that name already exsists").setEphemeral(true).queue();
+                        return;
+                    }
                     boolean subjective = subjectiveMapping.getAsBoolean();
                     boolean higherIsBetter = higherIsBetterMapping.getAsBoolean();
                     Message.Attachment infoFileAttachment = infoFileMapping.getAsAttachmentList().getFirst();
@@ -165,12 +183,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     }
 
                     Problem problem = new Problem(name,higherIsBetter,subjective,infoFileAttachment.getUrl(),judgeProgramPath,subjectiveChannelId);
-                    ProblemManager.getInstance().add(problem);
-                    //this is handled by problem.add
-//                    if(!subjective){
-//                        //have the images regenerated
-//                        new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
-//                    }
+                    ProblemManager.getInstance().add(problem);//this also regenrates images if nessarry
 
                     event.getHook().sendMessage("Created new problem "+name+"\nRegenerating containers, this may take some time.").queue();
                     //any other setup to run automatic submissions
@@ -230,7 +243,6 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         event.getHook().deleteOriginal().queue();
                     } catch (Exception e){
                         event.reply("Scores must be integers!").setEphemeral(true).queue();
-                        return;
                     }
                 }
 
@@ -247,6 +259,13 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                 return;
                             }
                             String newName = nameMapping.getAsString();
+                            if(!Util.isValidName(newName)){
+                                event.reply("Invalid problem name").setEphemeral(true).queue();
+                            }
+                            if(ProblemManager.getInstance().getNameList().contains(newName)){
+                                event.reply("A problem with that name already exsists").setEphemeral(true).queue();
+                                return;
+                            }
                             problem.setName(newName);
                             if(problem.isSubjective()){
                                 Objects.requireNonNull(Main.competitionServer.getGuildChannelById(problem.getSubjectiveScoringChannelId())).getManager().setName("Problem "+newName+" scoring").queue();
@@ -283,14 +302,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             }
                             Message.Attachment attachment = attachMapping.getAsAttachmentList().getFirst();
                             //copy the judge program (if one exsists)
-                            byte[] judgeProgram = null;
-                            if(!problem.getJudgePythonProgramPath().isEmpty()){
-                                try(FileInputStream fis = new FileInputStream("problems/"+problem.getName()+"/"+problem.getJudgePythonProgramPath())){
-                                    judgeProgram = fis.readAllBytes();
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
+                            byte[] judgeProgram = getJudgeProgramBytes(problem);
                             //delete the folder
                             Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
                             //download the attachment
@@ -391,5 +403,17 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                 }
             }
         }
+    }
+
+    private static byte @Nullable [] getJudgeProgramBytes(Problem problem) {
+        byte[] judgeProgram = null;
+        if(!problem.getJudgePythonProgramPath().isEmpty()){
+            try(FileInputStream fis = new FileInputStream("problems/"+ problem.getName()+"/"+ problem.getJudgePythonProgramPath())){
+                judgeProgram = fis.readAllBytes();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return judgeProgram;
     }
 }

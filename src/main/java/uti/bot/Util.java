@@ -143,4 +143,17 @@ public class Util {
         return new JSONObject(rawContent.toString());
 
     }
+
+    public static boolean isValidName(String name){
+        String allowed = "^([0-9a-zA-Z ']+)$";
+        if(name.matches(allowed)){
+            //PRN, AUX, NUL, COM1-9, LPT1-9
+            return !name.equalsIgnoreCase("CON") && !name.equalsIgnoreCase("PRN") && !name.equalsIgnoreCase("AUX") &&
+                    !name.equalsIgnoreCase("NUL") && !name.equalsIgnoreCase("NULL") &&
+                    !name.equalsIgnoreCase("COM1") && !name.equalsIgnoreCase("COM2") && !name.equalsIgnoreCase("COM3") && !name.equalsIgnoreCase("COM4") && !name.equalsIgnoreCase("COM5") && !name.equalsIgnoreCase("COM6") && !name.equalsIgnoreCase("COM7") && !name.equalsIgnoreCase("COM8") && !name.equalsIgnoreCase("COM9") &&
+                    !name.equalsIgnoreCase("LPT1") && !name.equalsIgnoreCase("LPT2") && !name.equalsIgnoreCase("LPT3") && !name.equalsIgnoreCase("LPT4") && !name.equalsIgnoreCase("LPT5") && !name.equalsIgnoreCase("LPT6") && !name.equalsIgnoreCase("LPT7") && !name.equalsIgnoreCase("LPT8") && !name.equalsIgnoreCase("LPT9");
+
+        }
+        return false;
+    }
 }
