@@ -19,6 +19,9 @@ public class ConfigManager {
 
     private String registerChannelMessage = "# Register Message!\nSet the content of this message in the config file";
 
+    private boolean compStarted;
+    private boolean compEnded;
+
     public ConfigManager(){
         boolean saveFile = false;
         try {
@@ -76,6 +79,16 @@ public class ConfigManager {
             } else {
                 saveFile = true;
             }
+            if(configJson.has("comp-started")){
+                compStarted = configJson.getBoolean("comp-started");
+            } else {
+                saveFile = true;
+            }
+            if(configJson.has("comp-ended")){
+                compEnded = configJson.getBoolean("comp-ended");
+            } else {
+                saveFile = true;
+            }
 
         } catch (IOException e) {
             System.err.println("Failed to load config file, generating new config.");
@@ -98,8 +111,8 @@ public class ConfigManager {
         configJson.put("team-category",teamCategoryId);
         configJson.put("judge-category",judgeCategoryId);
         configJson.put("admin-channel",adminChannelId);
-
-
+        configJson.put("comp-started",compStarted);
+        configJson.put("comp-ended",compEnded);
 
         Util.saveJSONObject(configJson,"config.json");
     }
@@ -170,6 +183,24 @@ public class ConfigManager {
 
     public void setTeamCategoryId(long teamCategoryId) {
         this.teamCategoryId = teamCategoryId;
+        save();
+    }
+
+    public boolean hasCompStarted() {
+        return compStarted;
+    }
+
+    public void setCompStarted(boolean compStarted) {
+        this.compStarted = compStarted;
+        save();
+    }
+
+    public boolean hasCompEnded() {
+        return compEnded;
+    }
+
+    public void setCompEnded(boolean compEnded) {
+        this.compEnded = compEnded;
         save();
     }
 }

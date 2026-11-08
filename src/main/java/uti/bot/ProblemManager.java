@@ -1,5 +1,6 @@
 package uti.bot;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.json.JSONArray;
 
@@ -46,6 +47,7 @@ public class ProblemManager {
         Util.saveJSONArray(userFile,"problems.json");
     }
 
+    @CheckReturnValue
     public int size(){
         return problems.size();
     }

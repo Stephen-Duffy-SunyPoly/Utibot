@@ -26,31 +26,23 @@ public class SubmissionRunner implements Runnable {
         return t;
     }
 
-    private Language submissionLanguage;
-    private int id;
+    private final int id;
 
-    private String dockerImage;
-    private String containerMainDirectory;
-    private String container_score_path;
-    private String container_output_path;
-
-    private String userFilePath;
-
-    private String containerUserFile;
+    private final String dockerImage;
 
     private String command;
 
     HashMap<String,ContainerBindFile> volumes = new HashMap<>();
 
-    private  Problem problem;
-    private Team team;
-    private ModalInteractionEvent event;
+    private final Problem problem;
+    private final Team team;
+    private final ModalInteractionEvent event;
 
-    private File scoreFile;
-    private File outputFile;
+    private final File scoreFile;
+    private final File outputFile;
 
     public SubmissionRunner(ModalInteractionEvent event, Problem problem, Team team, Message.Attachment attachment) throws IOException {
-        submissionLanguage = Language.fromFileExtension(attachment.getFileExtension());
+        Language submissionLanguage = Language.fromFileExtension(attachment.getFileExtension());
         if(submissionLanguage == null){
             event.reply("Invalid language").complete();
             throw new RuntimeException("Invalid language");
@@ -60,11 +52,11 @@ public class SubmissionRunner implements Runnable {
         File inputFolder = new File("submissions/"+id+"/input/");
         File outputFolder = new File("submissions/"+id+"/output/");
         boolean ignored = inputFolder.mkdirs();
-                ignored = outputFolder.mkdirs();
+        boolean ignored2 = outputFolder.mkdirs();
 
         //copy problem files to input
         //maybe this is not necessary
-        userFilePath = new File(inputFolder,attachment.getFileName()).getPath().replace("\\","/");
+        String userFilePath = new File(inputFolder, attachment.getFileName()).getPath().replace("\\", "/");
         byte[] userFile = Downloader.downloadContent(attachment.getUrl());
         try (FileOutputStream fos = new FileOutputStream(userFilePath)){
             fos.write(userFile);
@@ -79,11 +71,11 @@ public class SubmissionRunner implements Runnable {
         FileOutputStream outputOut = new FileOutputStream(outputFile);
         outputOut.close();
 
-        dockerImage = "utibot-submission-"+submissionLanguage.image+"_app";
-        containerMainDirectory = "/app";
-        container_score_path = containerMainDirectory+"/outputs/score.txt";
-        container_output_path = containerMainDirectory+"/outputs/output.txt";
-        containerUserFile = containerMainDirectory+"/"+problem.getName()+"/"+attachment.getFileName();
+        dockerImage = "utibot-submission-"+ submissionLanguage.image+"_app";
+        String containerMainDirectory = "/app";
+        String container_score_path = containerMainDirectory + "/outputs/score.txt";
+        String container_output_path = containerMainDirectory + "/outputs/output.txt";
+        String containerUserFile = containerMainDirectory + "/" + problem.getName() + "/" + attachment.getFileName();
 
         volumes.put(scoreFile.getPath().replace("\\","/"), new ContainerBindFile(container_score_path,"wr"));
         volumes.put(outputFile.getPath().replace("\\","/"), new ContainerBindFile(container_output_path,"wr"));
@@ -101,7 +93,7 @@ public class SubmissionRunner implements Runnable {
         //note that bash -c are being append separately when being passed in
         command = "cd \"/app/{PROBLEM_NAME}\" &&"+
                 //f'{compiler} \"{container_user_file}\" -o a.out;
-                "compile_output=$("+submissionLanguage.preProcessCommand + "); "+
+                "compile_output=$("+ submissionLanguage.preProcessCommand + "); "+
                 "status=$?;"+
                 "if [ $status -ne 0 ]; then "+
                     "echo {TIMEOUT_SCORE} > {CONTAINER_SCORE_PATH};"+
@@ -111,7 +103,7 @@ public class SubmissionRunner implements Runnable {
                 "fi;"+
                 //this is where the running actually is goes
                 //note: the judge program is expected to provide output of: <score> <logfile>
-                "output=$(timeout 60s python3 \""+problem.getJudgePythonProgramPath()+"\" "+submissionLanguage.evaluationCommand +");"+
+                "output=$(timeout 60s python3 \""+problem.getJudgePythonProgramPath()+"\" "+ submissionLanguage.evaluationCommand +");"+
                 "status=$?; "+
                 //if the program timed out
                 "if [ $status -eq 124 ]; then "+
@@ -133,9 +125,9 @@ public class SubmissionRunner implements Runnable {
                 "fi";
 
         command = command.replace("{PROBLEM_NAME}","\""+problem.getName()+"\"");
-        command = command.replace("{CONTAINER_USER_FILE}","\""+containerUserFile+"\"");
+        command = command.replace("{CONTAINER_USER_FILE}","\""+ containerUserFile +"\"");
         command = command.replace("{TIMEOUT_SCORE}",""+timeoutScore);
-        command = command.replace("{CONTAINER_SCORE_PATH}",container_score_path);
+        command = command.replace("{CONTAINER_SCORE_PATH}", container_score_path);
         command = command.replace("{CONTAINER_OUTPUT_PATH}", container_output_path);
 
 //        System.out.println("Running command:"+command);

@@ -4,8 +4,7 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
+
 import java.util.List;
 
 public class AutocompleteListenerAdapter extends ListenerAdapter {
@@ -26,7 +25,6 @@ public class AutocompleteListenerAdapter extends ListenerAdapter {
                     }
                     if(user.getTeam() == null) {
                         event.replyChoice("create", "create").queue();
-                        return;
                     } else {
                         List<AcChoice> options = List.of(new AcChoice("leave"),new AcChoice("invite"),new AcChoice("list members","list"),new AcChoice("get team rank","rank"));
                         //if the user is on a team
@@ -44,13 +42,16 @@ public class AutocompleteListenerAdapter extends ListenerAdapter {
                 }
 
                 case "submit" -> {
-                    //TODO check if the comp has started yet
-                    if(event.getFocusedOption().getName().equals("problem")){
-                        List<String> problemNameList = ProblemManager.getInstance().getNameList();
-                        String userQuery = event.getFocusedOption().getValue().toLowerCase();
-                        event.replyChoices(
-                                problemNameList.stream().filter(pName->pName.toLowerCase().contains(userQuery)).map(name -> new Command.Choice(name,name)).toList()
-                        ).queue();
+                    if(Main.config.hasCompStarted() && ! Main.config.hasCompEnded()) {
+                        if (event.getFocusedOption().getName().equals("problem")) {
+                            List<String> problemNameList = ProblemManager.getInstance().getNameList();
+                            String userQuery = event.getFocusedOption().getValue().toLowerCase();
+                            event.replyChoices(
+                                    problemNameList.stream().filter(pName -> pName.toLowerCase().contains(userQuery)).map(name -> new Command.Choice(name, name)).toList()
+                            ).queue();
+                        }
+                    } else {
+                        event.replyChoices().queue();
                     }
                 }
             }

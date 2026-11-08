@@ -39,6 +39,8 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                 case "shutdown" -> shutdownBot(event);
                 case "problems" -> showProblems(event);
                 case "leaderboard" -> showLeaderBoard(event);
+                case "start" -> startComp(event);
+                case "end" -> endComp(event);
             }
         } else {
             if(event.getName().equals("setup")){
@@ -50,23 +52,43 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         }
     }
 
+    private void endComp(SlashCommandInteractionEvent event) {
+        Main.config.setCompStarted(false);
+        Main.config.setCompEnded(true);
+        Main.registerCommandsServerIsSetUp();
+        event.reply("The competition has Ended!").queue();
+    }
+
+    private void startComp(SlashCommandInteractionEvent event) {
+        Main.config.setCompStarted(true);
+        Main.config.setCompEnded(false);
+        Main.registerCommandsServerIsSetUp();
+        event.reply("The competition has Started!").queue();
+    }
+
     private void showLeaderBoard(SlashCommandInteractionEvent event) {
-        //TODO check if the comp has started yet
-        TeamManager tm = TeamManager.getInstance();
-        List<TeamManager.TeamMapping> rankings = tm.getRankOfTeams();
-        StringBuilder results = new StringBuilder();
-        results.append("## Current team rankings:\n");
-        for(int i=0;i< rankings.size();i++){
-            results.append(i+1).append(". ").append(tm.get(rankings.get(i).teamIndex()).getName()).append("\n");
+        if (Main.config.hasCompEnded()||Main.config.hasCompStarted()) {
+            TeamManager tm = TeamManager.getInstance();
+            List<TeamManager.TeamMapping> rankings = tm.getRankOfTeams();
+            StringBuilder results = new StringBuilder();
+            results.append("## Current team rankings:\n");
+            for (int i = 0; i < rankings.size(); i++) {
+                results.append(i + 1).append(". ").append(tm.get(rankings.get(i).teamIndex()).getName()).append("\n");
+            }
+            event.reply(results.toString()).queue();
+        } else {
+            event.reply("The competition has not started yet").setEphemeral(true).queue();
         }
-        event.reply(results.toString()).queue();
     }
 
     private void showProblems(SlashCommandInteractionEvent event) {
-        //TODO check if the comp has started yet
-        event.reply("Here are the problems:").complete();
-        for (int i=0;i<ProblemManager.getInstance().size();i++){
-            ProblemManager.getInstance().get(i).displayProblem(event.getChannel());
+        if (Main.config.hasCompEnded()||Main.config.hasCompStarted()) {
+            event.reply("Here are the problems:").complete();
+            for (int i = 0; i < ProblemManager.getInstance().size(); i++) {
+                ProblemManager.getInstance().get(i).displayProblem(event.getChannel());
+            }
+        } else {
+            event.reply("The competition has not started yet").setEphemeral(true).queue();
         }
     }
 
@@ -81,38 +103,41 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
     }
 
     private void handleSubmit(SlashCommandInteractionEvent event) {
-        //TODO check if comp is started and not ended
-        User user = UserManager.getInstance().get(event.getUser().getIdLong());
-        if(user == null){
-            event.reply("You need to register for the event first.").setEphemeral(true).queue();
-            return;
-        }
-        if (user.getTeam() == null) {
-            event.reply("You need to be on a team to use this feature").setEphemeral(true).queue();
-            return;
-        }
-        long teamChannel = user.getTeam().getTextChannelId();
-        if(event.getChannelIdLong() != teamChannel){
-            event.reply("This command can only be used in your team channel: <#"+teamChannel+">").setEphemeral(true).queue();
-            return;
-        }
-        OptionMapping probOm = event.getOption("problem");
-        if(probOm == null){
-            return;
-        }
+        if(Main.config.hasCompStarted() && ! Main.config.hasCompEnded()) {
+            User user = UserManager.getInstance().get(event.getUser().getIdLong());
+            if (user == null) {
+                event.reply("You need to register for the event first.").setEphemeral(true).queue();
+                return;
+            }
+            if (user.getTeam() == null) {
+                event.reply("You need to be on a team to use this feature").setEphemeral(true).queue();
+                return;
+            }
+            long teamChannel = user.getTeam().getTextChannelId();
+            if (event.getChannelIdLong() != teamChannel) {
+                event.reply("This command can only be used in your team channel: <#" + teamChannel + ">").setEphemeral(true).queue();
+                return;
+            }
+            OptionMapping probOm = event.getOption("problem");
+            if (probOm == null) {
+                return;
+            }
 
-        Problem problem = ProblemManager.getInstance().get(probOm.getAsString());
-        if(problem == null){
-            event.reply("That is not a valid problem").setEphemeral(true).queue();
-            return;
+            Problem problem = ProblemManager.getInstance().get(probOm.getAsString());
+            if (problem == null) {
+                event.reply("That is not a valid problem").setEphemeral(true).queue();
+                return;
+            }
+            AttachmentUpload.Builder attachmentField = AttachmentUpload.create("submission").setRequired(true);
+            if (!problem.isSubjective()) {
+                attachmentField.setFileTypes(
+                        Arrays.stream(Language.values()).map(lang -> FileType.ofExtension(lang.extension)).toArray(FileType[]::new)
+                );
+            }
+            event.replyModal(Modal.create("submit-prob " + problem.getName(), "Create Submission for " + problem.getName()).addComponents(Label.of("file", "Your submission", attachmentField.build())).build()).queue();
+        } else {
+            event.reply("Submissions are not allowed at this time").setEphemeral(true).queue();
         }
-        AttachmentUpload.Builder attachmentField = AttachmentUpload.create("submission").setRequired(true);
-        if(!problem.isSubjective()){
-            attachmentField.setFileTypes(
-                Arrays.stream(Language.values()).map(lang -> FileType.ofExtension(lang.extension)).toArray(FileType[]::new)
-            );
-        }
-        event.replyModal(Modal.create("submit-prob "+problem.getName(),"Create Submission for "+problem.getName()).addComponents(Label.of("file","Your submission",attachmentField.build())).build()).queue();
     }
 
     void handleProblemCommand(SlashCommandInteractionEvent event){
@@ -261,14 +286,16 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                                 Label.of("User", EntitySelectMenu.create("user", EntitySelectMenu.SelectTarget.USER).setRequired(true).build())
                         ).build()).queue();
                 case "rank" -> {
-                    //TODO check if the comp has started
-                    Team team = user.getTeam();
-                    StringBuilder content = new StringBuilder("Problem | Your score | Your Rank\n");
-                    for(int i=0;i<ProblemManager.getInstance().size();i++){
-                        content.append(team.getProblemRank(i)).append("\n");
+                    if(Main.config.hasCompStarted() || Main.config.hasCompEnded()) {
+                        Team team = user.getTeam();
+                        StringBuilder content = new StringBuilder("Problem | Your score | Your Rank\n");
+                        for (int i = 0; i < ProblemManager.getInstance().size(); i++) {
+                            content.append(team.getProblemRank(i)).append("\n");
+                        }
+                        event.reply(content.toString()).queue();
+                    } else {
+                        event.reply("This information is not available at this time").setEphemeral(true).queue();
                     }
-                    event.reply(content.toString()).queue();
-
                 }
                 default -> event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }

@@ -1,5 +1,6 @@
 package uti.bot;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import org.json.JSONArray;
 import org.jspecify.annotations.NonNull;
 
@@ -46,6 +47,7 @@ public class TeamManager {
         Util.saveJSONArray(userFile,"teams.json");
     }
 
+    @CheckReturnValue
     public int size(){
         return teams.size();
     }
