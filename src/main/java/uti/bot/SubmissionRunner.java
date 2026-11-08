@@ -110,13 +110,18 @@ public class SubmissionRunner implements Runnable {
                     "exit 1;"+
                 "fi;"+
                 //this is where the running actually is goes
-                //note: the judeg program is expected to provide output of: <score> <logfile>
+                //note: the judge program is expected to provide output of: <score> <logfile>
                 "output=$(timeout 60s python3 \""+problem.getJudgePythonProgramPath()+"\" "+submissionLanguage.evaluationCommand +");"+
                 "status=$?; "+
-                //if the program crashed / timed out
+                //if the program timed out
                 "if [ $status -eq 124 ]; then "+
                     "echo {TIMEOUT_SCORE} > {CONTAINER_SCORE_PATH}; "+
                     "echo Your program timed out > {CONTAINER_OUTPUT_PATH};"+
+                //if the program otherwise crashes
+                "elif [ $status -ne 0 ]; then "+
+                    "echo {TIMEOUT_SCORE} > {CONTAINER_SCORE_PATH};"+
+                    "echo Execution failed > {CONTAINER_OUTPUT_PATH};"+
+                    "echo $output >> {CONTAINER_OUTPUT_PATH};"+
                 "else "+
                 //if it completed successfully
                     //take the first item output and print it to the score file

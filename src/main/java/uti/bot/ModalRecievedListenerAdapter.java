@@ -172,7 +172,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
 //                        new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
 //                    }
 
-                    event.getHook().sendMessage("Created new problem "+name).queue();
+                    event.getHook().sendMessage("Created new problem "+name+"\nRegenerating containers, this may take some time.").queue();
                     //any other setup to run automatic submissions
                 }
 
@@ -254,7 +254,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                 //have the images regenerated
                                 new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
                             }
-                            event.reply("Changed problem name to: "+newName).queue();
+                            event.reply("Changed problem name to: "+newName+"\nRegenerating containers, this may take some time.").queue();
 
                         } else if(event.getModalId().startsWith("prob-edit-high ")){
                             String problemName = event.getModalId().substring("prob-edit-high ".length());
@@ -314,7 +314,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                 //have the images regenerated
                                 new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
                             }
-                            event.reply("Replaced the problem info for: "+problemName).queue();
+                            event.reply("Replaced the problem info for: "+problemName+"\nRegenerating containers, this may take some time.").queue();
                         } else if (event.getModalId().startsWith("prob-edit-juge ")){
                             String problemName = event.getModalId().substring("prob-edit-juge ".length());
                             Problem problem = ProblemManager.getInstance().get(problemName);
@@ -341,7 +341,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             ProblemManager.getInstance().save();
                             //reload the containers
                             new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
-                            event.reply("Judging program updated for "+problemName).queue();
+                            event.reply("Judging program updated for "+problemName+"\nRegenerating containers, this may take some time.").queue();
                         }
                     } else if(event.getModalId().startsWith("submit-prob ")){
                         //validate submissions accepted

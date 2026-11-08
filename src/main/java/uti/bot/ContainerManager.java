@@ -200,11 +200,13 @@ public class ContainerManager {
                     .awaitStatusCode();
             System.out.println("Container status code: "+statusCode);
         } finally {
-            if (containerId != null) {
-                dockerClient.removeContainerCmd(containerId)
-                        .withForce(true)
-                        .exec();
-            }
+            try {
+                if (containerId != null) {
+                    dockerClient.removeContainerCmd(containerId)
+                            .withForce(true)
+                            .exec();
+                }
+            } catch (Exception ignored){}
         }
     }
 
