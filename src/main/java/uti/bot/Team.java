@@ -14,7 +14,7 @@ public class Team {
 
     private final long textChannelId;
 
-    private ArrayList<Integer> scores = new ArrayList<>();
+    private final ArrayList<Integer> scores = new ArrayList<>();
 
     public Team(String name, long roleId, long textChannelId){
         this.name = name;
@@ -93,6 +93,22 @@ public class Team {
             }
         }
         return users;
+    }
+
+    public String getProblemRank(int problemId) {
+        ProblemManager pr = ProblemManager.getInstance();
+        Problem problem = pr.get(problemId);
+        String result = problem.getName() + "  |  "+scores.get(problemId);
+        int myScore = scores.get(problemId);
+        int betterThanMe = 0;
+        for(int i=0;i<TeamManager.getInstance().size();i++){
+            if(TeamManager.getInstance().get(i).getScore(problemId) > myScore == problem.isHigherIsBetter()){
+                betterThanMe ++;
+            }
+        }
+        result += "  |  " + (betterThanMe + 1);
+
+        return result;
     }
 
     public void removeScore(int index){

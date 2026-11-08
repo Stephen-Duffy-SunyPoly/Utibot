@@ -246,6 +246,16 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
                         .addComponents(
                                 Label.of("User", EntitySelectMenu.create("user", EntitySelectMenu.SelectTarget.USER).setRequired(true).build())
                         ).build()).queue();
+                case "rank" -> {
+                    //TODO check if the comp has started
+                    Team team = user.getTeam();
+                    StringBuilder content = new StringBuilder("Problem | Your score | Your Rank\n");
+                    for(int i=0;i<ProblemManager.getInstance().size();i++){
+                        content.append(team.getProblemRank(i)).append("\n");
+                    }
+                    event.reply(content.toString()).queue();
+
+                }
                 default -> event.reply("That is not a valid team command at this time").setEphemeral(true).queue();
             }
         }
