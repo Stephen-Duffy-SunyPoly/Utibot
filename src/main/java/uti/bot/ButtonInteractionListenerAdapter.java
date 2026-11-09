@@ -190,6 +190,8 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
         TeamManager.getInstance().wipe();
         ProblemManager.getInstance().wipe();
 
+        Main.config.setCompEnded(false);
+        Main.config.setCompStarted(false);
         Main.config.setServerSetup(false);
         //remove the docker containers
         ContainerManager.getInstance().deleteLanguageContainers();
