@@ -99,6 +99,7 @@ public class SubmissionRunner implements Runnable {
                     "echo {TIMEOUT_SCORE} > {CONTAINER_SCORE_PATH};"+
                     "echo Compilation failed > {CONTAINER_OUTPUT_PATH};"+
                     "echo $compile_output >> {CONTAINER_OUTPUT_PATH};"+
+                    "echo exit code: $status >> {CONTAINER_OUTPUT_PATH};"+
                     "exit 1;"+
                 "fi;"+
                 //this is where the running actually is goes
@@ -124,7 +125,7 @@ public class SubmissionRunner implements Runnable {
                     "cat \"$filepath\" > {CONTAINER_OUTPUT_PATH}; "+
                 "fi";
 
-        command = command.replace("{PROBLEM_NAME}","\""+problem.getName()+"\"");
+        command = command.replace("{PROBLEM_NAME}",problem.getName());
         command = command.replace("{CONTAINER_USER_FILE}","\""+ containerUserFile +"\"");
         command = command.replace("{TIMEOUT_SCORE}",""+timeoutScore);
         command = command.replace("{CONTAINER_SCORE_PATH}", container_score_path);
