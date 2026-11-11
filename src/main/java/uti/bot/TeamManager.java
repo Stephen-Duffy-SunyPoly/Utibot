@@ -73,6 +73,25 @@ public class TeamManager {
         save();
     }
 
+    public boolean isScoreBestForProblem(Problem problem, int score){
+        int problemIndex = ProblemManager.getInstance().getProblemIndex(problem);
+        //if you find a single score that is the same or better, then false
+        if(problem.isHigherIsBetter()){
+            for(Team t:teams){
+                if(score <= t.getScore(problemIndex)){
+                    return false;
+                }
+            }
+        } else {
+            for(Team t:teams){
+                if(score >= t.getScore(problemIndex)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public List<TeamMapping> getRankOfTeams(){
         ProblemManager pr = ProblemManager.getInstance();
         int numberOfProblems = pr.size();

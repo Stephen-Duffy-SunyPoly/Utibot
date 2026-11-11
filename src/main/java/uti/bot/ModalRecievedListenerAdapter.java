@@ -258,6 +258,13 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         int currentScore = team.getScore(problemIndex);
                         if(problem.isHigherIsBetter() == score > currentScore){
                             //better score
+                            boolean globalHighScore = TeamManager.getInstance().isScoreBestForProblem(problem,score);
+                            if(globalHighScore){
+                                MessageChannel feedChannel = Main.competitionServer.getTextChannelById(Main.config.getFeedChannelId());
+                                if(feedChannel != null){
+                                    feedChannel.sendMessage("A new high score of `"+score+"` has been set for `"+problem.getName()+"` by <@&"+team.getRoleId()+">").queue();
+                                }
+                            }
                             team.setScore(problemIndex,score);
                             team.getChannel().sendMessage("You achieved a new team high score of "+score+" in "+problem.getName()).queue();
                             TeamManager.getInstance().save();

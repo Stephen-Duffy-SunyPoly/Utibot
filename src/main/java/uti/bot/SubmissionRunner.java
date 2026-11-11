@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 
@@ -162,6 +163,13 @@ public class SubmissionRunner implements Runnable {
         if(problem.isHigherIsBetter() == score > team.getScore(problemIndex)){
             //better
             resultText = "You achieved a new team high score of "+score+" in "+problem.getName();
+            boolean globalHighScore = TeamManager.getInstance().isScoreBestForProblem(problem,score);
+            if(globalHighScore){
+                MessageChannel feedChannel = Main.competitionServer.getTextChannelById(Main.config.getFeedChannelId());
+                if(feedChannel != null){
+                    feedChannel.sendMessage("A new high score of `"+score+"` has been set for `"+problem.getName()+"` by <@&"+team.getRoleId()+">").queue();
+                }
+            }
             team.setScore(problemIndex,score);
             TeamManager.getInstance().save();
         } else {
