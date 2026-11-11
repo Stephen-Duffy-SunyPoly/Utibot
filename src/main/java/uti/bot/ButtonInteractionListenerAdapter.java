@@ -127,11 +127,13 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
     void resetServer(){
         //note: all channels must be deleted separately
 
+        //delete the admin channel
         MessageChannel tmp = Main.competitionServer.getTextChannelById(Main.config.getAdminChannelId());
         if(tmp != null) {
             tmp.delete().queue();
         }
         ProblemManager pm = ProblemManager.getInstance();
+        //delete all subjective scoring channel
         for(int i=0;i<pm.size();i++){
             tmp = pm.get(i).getScoringChannel();
             if(tmp != null) {
@@ -162,6 +164,24 @@ public class ButtonInteractionListenerAdapter extends ListenerAdapter {
 
         //delete the registration channel
         tmp = Main.competitionServer.getTextChannelById(Main.config.getRegisterChannelId());
+        if(tmp != null){
+            tmp.delete().queue();
+        }
+
+        //delete the info channel
+        tmp = Main.competitionServer.getTextChannelById(Main.config.getInfoChannelId());
+        if(tmp != null){
+            tmp.delete().queue();
+        }
+
+        //delete the problems channel
+        tmp = Main.competitionServer.getTextChannelById(Main.config.getProblemsChannelId());
+        if(tmp != null){
+            tmp.delete().queue();
+        }
+
+        //delete the feed channel
+        tmp = Main.competitionServer.getTextChannelById(Main.config.getFeedChannelId());
         if(tmp != null){
             tmp.delete().queue();
         }

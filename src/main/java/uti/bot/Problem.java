@@ -127,7 +127,7 @@ public class Problem {
                     .addFiles(file)
                     .queue();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            channel.sendMessage("The file for "+name+" has an expired link. Discord file links are only valid for 24 hours, it is likely that this file was uploaded before then.").queue();
         }
     }
 }

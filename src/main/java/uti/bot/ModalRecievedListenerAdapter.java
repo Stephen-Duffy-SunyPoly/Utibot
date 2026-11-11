@@ -49,7 +49,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     if(member!=null) {
                         member.modifyNickname(name).queue();
                     }
-                    event.getHook().deleteOriginal().queue();
+                    event.getHook().sendMessage("Welcome to the competition\nTake a second to look around the server. Once you are ready to compete, you will need to join a team. This can be done by asking someone on a team if you can jon them, or by creating a new team with the `/team create` command.").setEphemeral(true).queue();
 
                 }
                 case "create-team" -> {
@@ -85,7 +85,8 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     TeamManager.getInstance().add(team);
                     user.setTeam(team);
                     Main.competitionServer.addRoleToMember(discordUser,teamRole).queue();
-                    channel.sendMessage("<@&"+teamRole.getId()+"> You will use this channel to communicate with your team mates and submit answers.").queue();
+                    channel.sendMessage("<@&"+teamRole.getId()+"> You will use this channel to communicate with your team mates and submit answers.\nTo invite people to your team, simply run the `/team invite` command or, right click on the users profile and select `invite to team` under the apps section.\n\n" +
+                            "Once the competition has started, use the `/submit <problem name>` command to submit your solutions.\nIf at any time you need to see the problems again, you can run the `/problems` command.").queue();
                     event.reply("Created team: "+teamName).queue();
                 }
 

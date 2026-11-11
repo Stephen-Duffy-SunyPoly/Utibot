@@ -16,6 +16,9 @@ public class ConfigManager {
     private long teamCategoryId;
     private long judgeCategoryId;
     private long adminChannelId;
+    private long infoChannelId;
+    private long problemsChannelId;
+    private long feedChannelId;
 
     private String registerChannelMessage = "# Register Message!\nSet the content of this message in the config file";
 
@@ -89,6 +92,21 @@ public class ConfigManager {
             } else {
                 saveFile = true;
             }
+            if(configJson.has("info-channel")){
+                infoChannelId = configJson.getLong("info-channel");
+            } else {
+                saveFile = true;
+            }
+            if(configJson.has("problem-channel")){
+                problemsChannelId = configJson.getLong("problem-channel");
+            } else {
+                saveFile = true;
+            }
+            if(configJson.has("feed-channel")){
+                feedChannelId = configJson.getLong("feed-channel");
+            } else {
+                saveFile = true;
+            }
 
         } catch (IOException e) {
             System.err.println("Failed to load config file, generating new config.");
@@ -113,6 +131,9 @@ public class ConfigManager {
         configJson.put("admin-channel",adminChannelId);
         configJson.put("comp-started",compStarted);
         configJson.put("comp-ended",compEnded);
+        configJson.put("info-channel",infoChannelId);
+        configJson.put("problem-channel",problemsChannelId);
+        configJson.put("feed-channel",feedChannelId);
 
         Util.saveJSONObject(configJson,"config.json");
     }
@@ -201,6 +222,33 @@ public class ConfigManager {
 
     public void setCompEnded(boolean compEnded) {
         this.compEnded = compEnded;
+        save();
+    }
+
+    public long getInfoChannelId() {
+        return infoChannelId;
+    }
+
+    public void setInfoChannelId(long infoChannelId) {
+        this.infoChannelId = infoChannelId;
+        save();
+    }
+
+    public long getProblemsChannelId() {
+        return problemsChannelId;
+    }
+
+    public void setProblemsChannelId(long problemsChannelId) {
+        this.problemsChannelId = problemsChannelId;
+        save();
+    }
+
+    public long getFeedChannelId() {
+        return feedChannelId;
+    }
+
+    public void setFeedChannelId(long feedChannelId) {
+        this.feedChannelId = feedChannelId;
         save();
     }
 }

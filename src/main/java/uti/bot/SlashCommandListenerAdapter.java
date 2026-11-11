@@ -355,9 +355,49 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         //create the admin channel in this category
         MessageChannel adminChannel = Main.competitionServer.createTextChannel("Admin",judgeCategory).setTopic("A private space for competition administration").syncPermissionOverrides().complete();
         Main.config.setAdminChannelId(adminChannel.getIdLong());
-        adminChannel.sendMessage("This is the admin channel. Use this channel to configure and administration the challenge. Users can not see this channel.").queue();
+        adminChannel.sendMessage("This is the admin channel. Use this channel to configure and administration the challenge. Users can not see this channel.\n\n" +
+                "Commands available for your use are:\n" +
+                "`/problem` create, delete and edit problems\n" +
+                "`/start` start the competition, releasing the problems\n" +
+                "`/end` end the competition, preventing new submissions\n" +
+                "`/shutdown` turn this bot off\n" +
+                "`/reset` bring this server back to \"factory setup\" and delete most bot data from the host").queue();
+
+        MessageChannel feedChannel = Main.competitionServer.createTextChannel("feed").addPermissionOverride(atEveryone,null,EnumSet.of(Permission.MESSAGE_SEND)).addMemberPermissionOverride(botId,EnumSet.of(Permission.MESSAGE_SEND),null).setTopic("Updates and high scores throughout the event").complete();
+        Main.config.setFeedChannelId(feedChannel.getIdLong());
+        feedChannel.sendMessage("Real time updates will appear here during the event").queue();
+
+        MessageChannel problemsChannel = Main.competitionServer.createTextChannel("problems").addPermissionOverride(atEveryone,null,EnumSet.of(Permission.MESSAGE_SEND)).addMemberPermissionOverride(botId,EnumSet.of(Permission.MESSAGE_SEND),null).setTopic("Available problems will be posted here").complete();
+        Main.config.setProblemsChannelId(problemsChannel.getIdLong());
+        problemsChannel.sendMessage("Problems will be posted here once the competition starts.").queue();
 
 
+        MessageChannel infoChannel = Main.competitionServer.createTextChannel("info").addPermissionOverride(atEveryone,null,EnumSet.of(Permission.MESSAGE_SEND)).addMemberPermissionOverride(botId,EnumSet.of(Permission.MESSAGE_SEND),null).setTopic("Information about this server and automated system").complete();
+        Main.config.setInfoChannelId(infoChannel.getIdLong());
+        infoChannel.sendMessage("# Welcome to the competition\n" +
+                "This bot is used to run the event, below is some information you will find useful\n\n" +
+                "## Teams\n" +
+                "Inorder to participate in this competition you will need to be on a team.\n" +
+                "To **start a team**, you will need to run the command `/team create` in any open text channel. You will then be prompted to enter the name of your new team.\n" +
+                "Once your team has been crated, you will have access to a private text channel for any team communications. All submissions must be made in this channel.\n" +
+                "There are 2 ways to **invite someone to a team**, the first way is to run the `/team invite` command in any open text channel, then select the person you want to invite from the list provided. " +
+                "The other way to invite someone is to right click (or equivalent) on their profile, and select `invite to team` under the apps sections. NOTE: a team can have no more then 4 people at a time.\n" +
+                "To **join a team** first ask someone on that team to invite you. Then look for a message from this bot in your DMs. Click on the accept button to join the team.\n" +
+                "To **Leave a team** run the command `/team leave` in any open text channel. Note: empty teams will be deleted.\n" +
+                "To **Check who is on your team** run the command `/team list` in any open text channel.\n" +
+                "To check how well your team is doing, run the `/team rank` command in any open text channel.").queue();
+        infoChannel.sendMessage("## Problems\n" +
+                "Once the competition starts, the available problems will be posted in the <#"+problemsChannel.getId()+"> channel.\n" +
+                "If at any time you want to quickly see the problems available, run the `/problems` command in any open text channel.\n\n" +
+                "## Leaderboard\n" +
+                "To view the **current leaderboard**, run the `/leaderboard` command in any open text channel.\n" +
+                "To view how your team ranks in all problems, run the command `/team rank` in any open text channel.\n\n" +
+                "## Submitting\n" +
+                "To submit a solution for any problem, run the command `/submit <problem name>` in your team channel. Then drag your submission file into the dialog that pops up.\n" +
+                "Automatically scored problems will then be executed, with the score and program output being returned to you when execution finishes. note: A strict 1 minute of run time is allowed for the entire execution and judging of your program. " +
+                "\n" +
+                "## Feed\n" +
+                "The <#"+feedChannel.getId()+"> channel will be updated during the completion with the latest high scores and other announcements.").queue();
 
         Main.config.setServerSetup(true);
         Main.registerCommandsServerIsSetUp();
