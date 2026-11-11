@@ -103,7 +103,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         }
 
         FileUpload megaZipUpload = FileUpload.fromData(megaZipBytes.toByteArray(),"All Problems.zip");
-        problemChannel.sendFiles(megaZipUpload).addContent("all problems in a single file").queue();
+        problemChannel.sendFiles(megaZipUpload).addContent("All problems in a single file").queue();
         //send a competition start message in the feed channel
         MessageChannel feedChannel = Main.competitionServer.getTextChannelById(Main.config.getFeedChannelId());
         if(feedChannel == null){

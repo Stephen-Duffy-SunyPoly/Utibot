@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -47,7 +48,13 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     Main.competitionServer.addRoleToMember(event.getUser(),Main.getRegisteredRole()).queue();
                     Member member = event.getMember();
                     if(member!=null) {
-                        member.modifyNickname(name).queue();
+                        try {
+                            member.modifyNickname(name).queue();
+                        } catch (HierarchyException he){
+                            event.getHook().sendMessage("Welcome to the competition\nTake a second to look around the server. Once you are ready to compete, you will need to join a team. This can be done by asking someone on a team if you can jon them, or by creating a new team with the `/team create` command.\n" +
+                                    "note: because you are above this bot in the server hierarchy your nick name was not changed").setEphemeral(true).queue();
+                            return;
+                        }
                     }
                     event.getHook().sendMessage("Welcome to the competition\nTake a second to look around the server. Once you are ready to compete, you will need to join a team. This can be done by asking someone on a team if you can jon them, or by creating a new team with the `/team create` command.").setEphemeral(true).queue();
 
@@ -202,7 +209,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     }
 
                     Problem problem = new Problem(name,higherIsBetter,subjective,infoFileAttachment.getUrl(),judgeProgramPath,subjectiveChannelId);
-                    ProblemManager.getInstance().add(problem);//this also regenrates images if nessarry
+                    ProblemManager.getInstance().add(problem);//this also regenerates images if necessary
 
                     event.getHook().sendMessage("Created new problem "+name+(!subjective?"\nRegenerating containers, this may take some time.":"")).queue();
                     //any other setup to run automatic submissions
@@ -411,11 +418,33 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         Team team = user.getTeam();
 
                         FileUpload file = attachment.getProxy().downloadAsFileUpload(attachment.getFileName());
+                        //if this is a subjectively scored problem
                         if(problem.isSubjective()){
-                            problem.getScoringChannel().sendMessage("<@&"+team.getRoleId()+"> has made a submission")
+                            int problemIndex = ProblemManager.getInstance().getProblemIndex(problem);
+                            //if we only want 1 subjective problem message per team
+                            if(Main.config.shouldUseSingleSubjectiveMessage()){
+                                long messageId = team.getSubjectiveMessageId(problemIndex);
+                                if(messageId != 0){
+                                    try {
+                                        //get their last submit message
+                                        Message lastSubmit = problem.getScoringChannel().retrieveMessageById(messageId).complete();
+                                        if (lastSubmit != null) {
+                                            //delete it
+                                            lastSubmit.delete().queue();
+                                        }
+                                    }catch (Exception e){
+                                        e.printStackTrace();//tmp
+                                    }
+                                }
+                            }
+                            Message submitMessage = problem.getScoringChannel().sendMessage("<@&"+team.getRoleId()+"> has made a submission")
                                     .addFiles(file)
                                     .addComponents(ActionRow.of(Button.primary("score-submission","Score")))
-                                    .queue();
+                                    .complete();
+                            if(Main.config.shouldUseSingleSubjectiveMessage()){
+                                team.setSubjectiveMessageId(problemIndex, submitMessage.getIdLong());
+                                TeamManager.getInstance().save();
+                            }
                             event.reply("Submission made for "+problemName).queue();
                         } else {
                             SubmissionRunner runner;

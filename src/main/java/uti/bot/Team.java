@@ -15,6 +15,7 @@ public class Team {
     private final long textChannelId;
 
     private final ArrayList<Integer> scores = new ArrayList<>();
+    private final ArrayList<Long> subjectiveMessageIds = new ArrayList<>();
 
     public Team(String name, long roleId, long textChannelId){
         this.name = name;
@@ -27,6 +28,7 @@ public class Team {
             } else {
                 scores.add(Integer.MAX_VALUE);
             }
+            subjectiveMessageIds.add(0L);
         }
     }
 
@@ -35,8 +37,11 @@ public class Team {
         roleId = json.getLong("role");
         textChannelId = json.getLong("channel");
         JSONArray scores = json.getJSONArray("scores");
+        JSONArray subjectiveMessages = json.getJSONArray("subjective-messages");
         for(int i=0;i< scores.length();i++){
             this.scores.add(scores.getInt(i));
+            subjectiveMessageIds.add(subjectiveMessages.getLong(i));
+
         }
     }
 
@@ -50,6 +55,11 @@ public class Team {
             scoresOut.put(score);
         }
         json.put("scores",scoresOut);
+        JSONArray subjectiveMessages = new JSONArray();
+        for(Long mId: subjectiveMessageIds){
+            subjectiveMessages.put(mId);
+        }
+        json.put("subjective-messages",subjectiveMessages);
         return json;
     }
 
@@ -118,6 +128,7 @@ public class Team {
 
     public void removeScore(int index){
         scores.remove(index);
+        subjectiveMessageIds.remove(index);
     }
 
     public synchronized void setScore(int index,int score){
@@ -130,6 +141,15 @@ public class Team {
 
     public void addNewScore(int value){
         scores.add(value);
+        subjectiveMessageIds.add(0L);
+    }
+
+    public synchronized void setSubjectiveMessageId(int index,long messageId){
+        subjectiveMessageIds.set(index,messageId);
+    }
+
+    public long getSubjectiveMessageId(int index){
+        return subjectiveMessageIds.get(index);
     }
 
     @Override

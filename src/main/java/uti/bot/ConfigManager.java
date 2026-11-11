@@ -25,6 +25,8 @@ public class ConfigManager {
     private boolean compStarted;
     private boolean compEnded;
 
+    private boolean useSingleSubjectiveMessage = true;
+
     public ConfigManager(){
         boolean saveFile = false;
         try {
@@ -107,6 +109,11 @@ public class ConfigManager {
             } else {
                 saveFile = true;
             }
+            if(configJson.has("single-subjective-message")){
+                useSingleSubjectiveMessage = configJson.getBoolean("single-subjective-message");
+            } else {
+                saveFile = true;
+            }
 
         } catch (IOException e) {
             System.err.println("Failed to load config file, generating new config.");
@@ -134,6 +141,7 @@ public class ConfigManager {
         configJson.put("info-channel",infoChannelId);
         configJson.put("problem-channel",problemsChannelId);
         configJson.put("feed-channel",feedChannelId);
+        configJson.put("single-subjective-message",useSingleSubjectiveMessage);
 
         Util.saveJSONObject(configJson,"config.json");
     }
@@ -250,5 +258,9 @@ public class ConfigManager {
     public void setFeedChannelId(long feedChannelId) {
         this.feedChannelId = feedChannelId;
         save();
+    }
+
+    public boolean shouldUseSingleSubjectiveMessage() {
+        return useSingleSubjectiveMessage;
     }
 }
