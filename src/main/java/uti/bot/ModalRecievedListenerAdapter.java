@@ -164,17 +164,30 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     boolean ignored = new File("problems/"+name+"/").mkdirs();
 
                     //download and extract the info file into the folder
-                    byte[] infoFileData = Downloader.downloadContent(infoFileAttachment.getUrl());
+                    byte[] infoFileData = FileUtil.downloadContent(infoFileAttachment.getUrl());
                     try {
-                        Downloader.decompressZipBytesToDisc(infoFileData,"problems/"+name+"/");
+                        FileUtil.decompressZipBytesToDisc(infoFileData,"problems/"+name+"/");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
+                    }
+                    String[] fileList = new File("problems/"+name+"/").list();
+                    if(fileList !=null && fileList.length==1){
+                        //something fishy may be going on
+                        if(new File("problems/"+name+"/"+fileList[0]).isDirectory()){
+                            //it's just a folder, move everything up a directory
+                            try{
+                                FileUtil.moveFilesUpDirectory(new File("problems/"+name+"/"+fileList[0]).toPath());
+                            } catch (Exception e){
+                                event.reply(e.getMessage()).setEphemeral(true).queue();
+                                return;
+                            }
+                        }
                     }
 
                     String judgeProgramPath = "";
                     if(!subjective) {
                         //if not subjective, download the judge program and put it in the folder
-                        byte[] judgeProgramBytes = Downloader.downloadContent(judgeProgramAttachment.getUrl());
+                        byte[] judgeProgramBytes = FileUtil.downloadContent(judgeProgramAttachment.getUrl());
                         try (FileOutputStream fos = new FileOutputStream("problems/"+name+"/"+judgeProgramAttachment.getFileName())) {
                             fos.write(judgeProgramBytes);
                         } catch (IOException e) {
@@ -212,7 +225,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         }
                         Message message = event.getMessage();
                         if(message == null){
-                            event.reply("Unable to fin source message!").setEphemeral(true).queue();
+                            event.reply("Unable to find source message!").setEphemeral(true).queue();
                             return;
                         }
                         Role teamRole = message.getMentions().getRoles().getFirst();
@@ -305,12 +318,20 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             //copy the judge program (if one exsists)
                             byte[] judgeProgram = getJudgeProgramBytes(problem);
                             //delete the folder
-                            Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
+                            FileUtil.recursiveDelete(new File("problems/"+problem.getName()+"/"));
                             //download the attachment
-                            byte[] newInfo = Downloader.downloadContent(attachment.getUrl());
+                            byte[] newInfo = FileUtil.downloadContent(attachment.getUrl());
                             //extract the attachment
                             try {
-                                Downloader.decompressZipBytesToDisc(newInfo,"problems/"+problem.getName()+"/");
+                                FileUtil.decompressZipBytesToDisc(newInfo,"problems/"+problem.getName()+"/");
+                                String[] fileList = new File("problems/"+problem.getName()+"/").list();
+                                if(fileList !=null && fileList.length==1){
+                                    //something fishy may be going on
+                                    if(new File("problems/"+problem.getName()+"/"+fileList[0]).isDirectory()){
+                                        //it's just a folder, move everything up a directory
+                                        FileUtil.moveFilesUpDirectory(new File("problems/"+problem.getName()+"/"+fileList[0]).toPath());
+                                    }
+                                }
                                 if(!problem.getJudgePythonProgramPath().isEmpty()) {
                                     //recopy the judge program
                                     try (FileOutputStream fos = new FileOutputStream("problems/" + problem.getName() + "/" + problem.getJudgePythonProgramPath())) {
@@ -319,7 +340,8 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                     }
                                 }
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                event.reply(e.getMessage()).setEphemeral(true).queue();
+                                return;
                             }
                             problem.setInfoFileLink(attachment.getUrl());
                             ProblemManager.getInstance().save();
@@ -342,7 +364,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             //delete current judder
                             boolean ignored = new File("problems/" + problem.getName() + "/" + problem.getJudgePythonProgramPath()).delete();
                             //download the new one
-                            byte[] judgeBytes = Downloader.downloadContent(attachment.getUrl());
+                            byte[] judgeBytes = FileUtil.downloadContent(attachment.getUrl());
                             try (FileOutputStream fos = new FileOutputStream("problems/" + problem.getName() + "/" +attachment.getFileName())){
                                 fos.write(judgeBytes);
                             } catch (IOException e) {

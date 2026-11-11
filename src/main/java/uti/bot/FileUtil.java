@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class Downloader {
+public class FileUtil {
     static byte[] downloadContent(String url){
         try {
             URL uri = new URI(url).toURL();
@@ -113,6 +113,29 @@ public class Downloader {
                 throw (IOException) e.getCause();
             }
             throw e;
+        }
+    }
+
+    public static void moveFilesUpDirectory(Path innerFolder) throws IOException {
+        // The parent directory (one level up)
+        Path parentFolder = innerFolder.getParent();
+
+        if (parentFolder == null) {
+            return;
+        }
+
+        // List immediate contents of the inner folder and move them
+        try (Stream<Path> contents = Files.list(innerFolder)) {
+            contents.forEach(source -> {
+                // Construct target path: parent_folder + original file/folder name
+                Path target = parentFolder.resolve(source.getFileName());
+                try {
+                    Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("Moved: " + source.getFileName());
+                } catch (IOException e) {
+                    System.err.println("Failed to move: " + source.getFileName() + " - " + e.getMessage());
+                }
+            });
         }
     }
 }

@@ -87,7 +87,7 @@ public class ProblemManager {
         TeamManager.getInstance().save();
 
         //delete the problem folder
-        Downloader.recursiveDelete(new File("problems/"+problem.getName()+"/"));
+        FileUtil.recursiveDelete(new File("problems/"+problem.getName()+"/"));
         //delete the channel if there is one
         MessageChannel chanel = problem.getScoringChannel();
         if(chanel!=null){
@@ -137,6 +137,6 @@ public class ProblemManager {
     public void wipe(){
         problems.clear();
         boolean ignored = new File("problems.json").delete();
-        Downloader.recursiveDelete(new File("problems/"));
+        FileUtil.recursiveDelete(new File("problems/"));
     }
 }

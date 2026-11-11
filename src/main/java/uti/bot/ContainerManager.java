@@ -158,7 +158,7 @@ public class ContainerManager {
                     .awaitImageId();
             System.out.println("Java base image complete\nFinished building base images");
             //delete the folder structure
-            Downloader.recursiveDelete(new File("base/"));
+            FileUtil.recursiveDelete(new File("base/"));
         }
     }
 

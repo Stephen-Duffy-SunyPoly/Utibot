@@ -57,7 +57,7 @@ public class SubmissionRunner implements Runnable {
         //copy problem files to input
         //maybe this is not necessary
         String userFilePath = new File(inputFolder, attachment.getFileName()).getPath().replace("\\", "/");
-        byte[] userFile = Downloader.downloadContent(attachment.getUrl());
+        byte[] userFile = FileUtil.downloadContent(attachment.getUrl());
         try (FileOutputStream fos = new FileOutputStream(userFilePath)){
             fos.write(userFile);
         }
@@ -176,6 +176,6 @@ public class SubmissionRunner implements Runnable {
         }
 
         //delete the local files
-        Downloader.recursiveDelete(new File("submissions/"+id+"/"));
+        FileUtil.recursiveDelete(new File("submissions/"+id+"/"));
     }
 }
