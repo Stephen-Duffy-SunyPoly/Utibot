@@ -168,7 +168,9 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     try {
                         FileUtil.decompressZipBytesToDisc(infoFileData,"problems/"+name+"/");
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        event.reply(e.toString()).setEphemeral(true).queue();
+                        return;
                     }
                     String[] fileList = new File("problems/"+name+"/").list();
                     if(fileList !=null && fileList.length==1){
@@ -178,7 +180,8 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             try{
                                 FileUtil.moveFilesUpDirectory(new File("problems/"+name+"/"+fileList[0]).toPath());
                             } catch (Exception e){
-                                event.reply(e.getMessage()).setEphemeral(true).queue();
+                                e.printStackTrace();
+                                event.reply(e.toString()).setEphemeral(true).queue();
                                 return;
                             }
                         }
@@ -191,7 +194,9 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                         try (FileOutputStream fos = new FileOutputStream("problems/"+name+"/"+judgeProgramAttachment.getFileName())) {
                             fos.write(judgeProgramBytes);
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            e.printStackTrace();
+                            event.reply(e.toString()).setEphemeral(true).queue();
+                            return;
                         }
                         judgeProgramPath = judgeProgramAttachment.getFileName();
                     }
@@ -340,7 +345,8 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                     }
                                 }
                             } catch (IOException e) {
-                                event.reply(e.getMessage()).setEphemeral(true).queue();
+                                e.printStackTrace();
+                                event.reply(e.toString()).setEphemeral(true).queue();
                                 return;
                             }
                             problem.setInfoFileLink(attachment.getUrl());
@@ -368,7 +374,9 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                             try (FileOutputStream fos = new FileOutputStream("problems/" + problem.getName() + "/" +attachment.getFileName())){
                                 fos.write(judgeBytes);
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                e.printStackTrace();
+                                event.reply(e.toString()).setEphemeral(true).queue();
+                                return;
                             }
 
                             //save the file path

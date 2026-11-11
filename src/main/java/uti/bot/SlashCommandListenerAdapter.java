@@ -17,12 +17,17 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.FileType;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.modals.Modal;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class SlashCommandListenerAdapter extends ListenerAdapter {
     @Override
@@ -57,13 +62,54 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
         Main.config.setCompEnded(true);
         Main.registerCommandsServerIsSetUp();
         event.reply("The competition has Ended!").queue();
+        //send a competition end message in the feed channel
+        MessageChannel feedChannel = Main.competitionServer.getTextChannelById(Main.config.getFeedChannelId());
+        if(feedChannel == null){
+            return;
+        }
+        feedChannel.sendMessage("The competition has ended!").queue();
     }
 
     private void startComp(SlashCommandInteractionEvent event) {
         Main.config.setCompStarted(true);
         Main.config.setCompEnded(false);
         Main.registerCommandsServerIsSetUp();
+        //publish the problems in the problems channel
+        MessageChannel problemChannel = Main.competitionServer.getTextChannelById(Main.config.getProblemsChannelId());
+        if(problemChannel == null){
+            event.reply("Unable to find problems channel").queue();
+            return;
+        }
         event.reply("The competition has Started!").queue();
+        for (int i = 0; i < ProblemManager.getInstance().size(); i++) {
+            ProblemManager.getInstance().get(i).displayProblem(problemChannel);
+        }
+        //mega zip file
+        ByteArrayOutputStream megaZipBytes = new ByteArrayOutputStream();
+        ZipOutputStream megaZipOut = new ZipOutputStream(megaZipBytes);
+        try {
+            for(int i=0;i<ProblemManager.getInstance().size();i++){
+                Problem p = ProblemManager.getInstance().get(i);
+                megaZipOut.putNextEntry(new ZipEntry(p.getName()+".zip"));
+                byte[] data = FileUtil.downloadContent(p.getInfoFileLink());
+                megaZipOut.write(data);
+                megaZipOut.closeEntry();
+            }
+            megaZipOut.flush();
+            megaZipOut.close();
+        } catch (IOException e) {
+            event.reply(e.toString()).queue();
+            return;
+        }
+
+        FileUpload megaZipUpload = FileUpload.fromData(megaZipBytes.toByteArray(),"All Problems.zip");
+        problemChannel.sendFiles(megaZipUpload).addContent("all problems in a single file").queue();
+        //send a competition start message in the feed channel
+        MessageChannel feedChannel = Main.competitionServer.getTextChannelById(Main.config.getFeedChannelId());
+        if(feedChannel == null){
+            return;
+        }
+        feedChannel.sendMessage("The competition has started!").queue();
     }
 
     private void showLeaderBoard(SlashCommandInteractionEvent event) {
