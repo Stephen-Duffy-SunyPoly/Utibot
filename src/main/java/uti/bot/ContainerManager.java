@@ -232,6 +232,8 @@ public class ContainerManager {
         }
         //if in the process of generation, another generation request came in
         cleanUpDanglingImages();
+        //delete the docker file
+        boolean ignored2 = dockerfile.delete();
         if(!generationRequested){
             generatingContainers = false;
             try {
