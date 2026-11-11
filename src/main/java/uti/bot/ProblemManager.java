@@ -65,7 +65,7 @@ public class ProblemManager {
         problems.add(newProblem);
         save();
         for (int j =0;j<TeamManager.getInstance().size();j++){
-            TeamManager.getInstance().get(j).addNewScore(newProblem.isHigherIsBetter()?0:Integer.MAX_VALUE);
+            TeamManager.getInstance().get(j).addNewScore(newProblem.isHigherIsBetter()?Integer.MIN_VALUE:Integer.MAX_VALUE);
         }
         TeamManager.getInstance().save();
         //rebuild the containers

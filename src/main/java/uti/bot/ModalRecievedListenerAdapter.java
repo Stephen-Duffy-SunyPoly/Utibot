@@ -204,7 +204,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                     Problem problem = new Problem(name,higherIsBetter,subjective,infoFileAttachment.getUrl(),judgeProgramPath,subjectiveChannelId);
                     ProblemManager.getInstance().add(problem);//this also regenrates images if nessarry
 
-                    event.getHook().sendMessage("Created new problem "+name+"\nRegenerating containers, this may take some time.").queue();
+                    event.getHook().sendMessage("Created new problem "+name+(!subjective?"\nRegenerating containers, this may take some time.":"")).queue();
                     //any other setup to run automatic submissions
                 }
 
@@ -292,7 +292,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                 //have the images regenerated
                                 new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
                             }
-                            event.reply("Changed problem name to: "+newName+"\nRegenerating containers, this may take some time.").queue();
+                            event.reply("Changed problem name to: "+newName+(!problem.isSubjective()?"\nRegenerating containers, this may take some time.":"")).queue();
 
                         } else if(event.getModalId().startsWith("prob-edit-high ")){
                             String problemName = event.getModalId().substring("prob-edit-high ".length());
@@ -355,7 +355,7 @@ public class ModalRecievedListenerAdapter extends ListenerAdapter {
                                 //have the images regenerated
                                 new Thread(() -> ContainerManager.getInstance().requestRegenerateImages()).start();
                             }
-                            event.reply("Replaced the problem info for: "+problemName+"\nRegenerating containers, this may take some time.").queue();
+                            event.reply("Replaced the problem info for: "+problemName+(!problem.isSubjective()?"\nRegenerating containers, this may take some time.":"")).queue();
                         } else if (event.getModalId().startsWith("prob-edit-juge ")){
                             String problemName = event.getModalId().substring("prob-edit-juge ".length());
                             Problem problem = ProblemManager.getInstance().get(problemName);
