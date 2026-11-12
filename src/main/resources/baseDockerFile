@@ -2,7 +2,7 @@ FROM utibot/python-base:latest
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        openjdk-17-jdk-headless && \
+        {PACKAGES} && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
