@@ -18,9 +18,11 @@ import java.util.*;
 
 public class ContainerManager {
 
+    //Adding new Languages SETP 1
     public enum BaseImage{
         GCC_BASE("gcc g++ libc6-dev binutils","gcc"),
-        JAVA_BASE("openjdk-17-jdk-headless","java");
+        JAVA_BASE("openjdk-17-jdk-headless","java"),
+        RUST_BASE("rustc","rust");
 
         final String installPackages;
         final String imageName;
@@ -125,8 +127,6 @@ public class ContainerManager {
             //if not,
             //create a folder structure for the images to be built from
             boolean ignored = new File("base/python").mkdirs();
-            ignored = new File("base/gcc").mkdirs();
-            ignored = new File("base/java").mkdirs();
             //extract all the docker files
             try(InputStream extractDockerFile = ContainerManager.class.getClassLoader().getResourceAsStream("pythonBaseDockerFile")){
                 try(FileOutputStream dockerFileOut = new FileOutputStream("base/python/DockerFile")){
@@ -148,6 +148,7 @@ public class ContainerManager {
             System.out.println("Python base image complete");
             //do the dynamic images
             for(BaseImage base: BaseImage.values()){
+                boolean ignored2 =new File("base/"+base.imageName).mkdirs();
                 System.out.println("Building "+base.imageName+" base image");
                 //extract and create the docker file
                 try(InputStream extractDockerFile = ContainerManager.class.getClassLoader().getResourceAsStream("baseDockerFile")){
