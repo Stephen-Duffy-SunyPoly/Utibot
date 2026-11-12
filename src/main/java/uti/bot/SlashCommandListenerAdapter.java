@@ -68,6 +68,7 @@ public class SlashCommandListenerAdapter extends ListenerAdapter {
             return;
         }
         feedChannel.sendMessage("The competition has ended!").queue();
+        feedChannel.sendMessage("If you found this bot useful, give us a star on [github](https://github.com/Stephen-Duffy-SunyPoly/Utibot)").queue();
     }
 
     private void startComp(SlashCommandInteractionEvent event) {
